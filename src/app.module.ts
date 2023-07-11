@@ -1,0 +1,30 @@
+
+import { Web3Module } from "./web3/web3.module";
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { DatabaseModule } from "./database/database.module";
+import { UserModule } from "./user/user.module";
+import { AuthModule } from "./auth/auth.module";
+import { ServeStaticModule } from "@nestjs/serve-static";
+import { CommandModule } from "nestjs-command";
+import { BugsnagModule } from "./bugsnag/bugsnag.module";
+import { join } from "path";
+
+@Module({
+  imports: [
+
+    BugsnagModule,
+    CommandModule,
+    Web3Module,
+    DatabaseModule,
+    UserModule,
+    AuthModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, "..", "views"),
+    }),
+  ],
+  controllers: [],
+  providers: [],
+})
+export class AppModule {}
