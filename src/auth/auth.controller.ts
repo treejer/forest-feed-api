@@ -39,10 +39,6 @@ export class AuthController {
     },
   })
   @Get("nonce/:wallet")
-  @ApiQuery({ name: "token", required: false, type: String })
-  @ApiQuery({ name: "email", required: false, type: String })
-  @ApiQuery({ name: "mobile", required: false, type: String })
-  @ApiQuery({ name: "country", required: false, type: String })
   getNonce(@Param("wallet") wallet: string): Promise<NonceResultDto> {
     return this.authService.getNonce(wallet);
   }

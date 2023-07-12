@@ -5,7 +5,7 @@ export enum CollectionNames {
 
 export enum Role {
   USER = 1,
-  PLANTER = 2,
+  SCRIPT = 2,
   ADMIN = 3,
 }
 
