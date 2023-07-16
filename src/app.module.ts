@@ -1,4 +1,3 @@
-
 import { Web3Module } from "./web3/web3.module";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
@@ -9,16 +8,19 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { CommandModule } from "nestjs-command";
 import { BugsnagModule } from "./bugsnag/bugsnag.module";
 import { join } from "path";
+import { SchedulerModule } from "./scheduler/scheduler.module";
+import { PendingRewardModule } from "./pendingReward/pendingReward.module";
 
 @Module({
   imports: [
-
     BugsnagModule,
     CommandModule,
     Web3Module,
     DatabaseModule,
     UserModule,
     AuthModule,
+    SchedulerModule,
+    PendingRewardModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "views"),
