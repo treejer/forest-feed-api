@@ -66,8 +66,9 @@ export class Web3Service {
       const signedTransaction = await this.signTransaction(transaction);
 
       const recipientHash = await this.broadcastTransaction(signedTransaction);
+      return recipientHash;
     } catch (error) {
-      console.log("error in func : ", error);
+      // console.log("error in func : ", error);
 
       throw new InternalServerErrorException(error.message);
     }
