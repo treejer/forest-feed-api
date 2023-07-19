@@ -14,3 +14,7 @@ export const StatusErrorMessage = {
 export const SignatureError = {
   INVALID_SIGNATURE_LENTGH: "Invalid signature length",
 };
+
+export const LensApiErrorMessage = {
+  LENS_URL_NOT_SET: "LENS SOURCE URL NOT SET",
+};

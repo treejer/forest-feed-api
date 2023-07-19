@@ -10,6 +10,7 @@ import { BugsnagModule } from "./bugsnag/bugsnag.module";
 import { join } from "path";
 import { SchedulerModule } from "./scheduler/scheduler.module";
 import { PendingRewardModule } from "./pendingReward/pendingReward.module";
+import { LensApiModule } from "./lens-api/lens-api.module";
 
 @Module({
   imports: [
@@ -19,8 +20,9 @@ import { PendingRewardModule } from "./pendingReward/pendingReward.module";
     DatabaseModule,
     UserModule,
     AuthModule,
-    SchedulerModule,
+    // SchedulerModule,
     PendingRewardModule,
+    LensApiModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "views"),
