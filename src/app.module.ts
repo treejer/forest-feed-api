@@ -20,7 +20,7 @@ import { LensApiModule } from "./lens-api/lens-api.module";
     DatabaseModule,
     UserModule,
     AuthModule,
-    // SchedulerModule,
+    SchedulerModule,
     PendingRewardModule,
     LensApiModule,
     ConfigModule.forRoot({ isGlobal: true }),
