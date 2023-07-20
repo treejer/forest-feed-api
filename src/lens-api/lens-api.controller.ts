@@ -11,4 +11,16 @@ export class LensApiController {
   getProfile(@Param("id") id: string) {
     return this.lensApiService.getFollowersCount(id);
   }
+
+  @ApiOperation({ summary: "get is profile_a followed by profile_b" })
+  @Get("/profile/:profile_a/followed-by/:profile_b")
+  getProfileAFollowedByProfileB(
+    @Param("profile_a") profile_a: string,
+    @Param("profile_b") profile_b: string
+  ) {
+    return this.lensApiService.getProfileAFollowedByProfileB(
+      profile_a,
+      profile_b
+    );
+  }
 }
