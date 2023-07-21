@@ -1,6 +1,8 @@
 export enum CollectionNames {
   USER = "users",
   LAST_STATE = "laststates",
+  PENDING_REWARDS = "pendingrewards",
+  CAMPAIGN = "campaigns",
 }
 
 export enum Role {

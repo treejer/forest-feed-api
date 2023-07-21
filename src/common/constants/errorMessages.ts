@@ -19,3 +19,11 @@ export const LensApiErrorMessage = {
   LENS_URL_NOT_SET: "LENS SOURCE URL NOT SET",
   ERROR_IN_GETTING_RESPONSE: "Error in getting response from lens",
 };
+
+export const CampaignErrorMessage = {
+  PUBLICATION_HAS_ACTIVE_CAMPAIGN:
+    "there is active campaign for this publication.",
+  CREATOR_IS_NOT_OWNER: "campaign creator is not publication owner",
+  CAMPAIGNS_SIZE_IS_MORE_THAN_YOUR_CAPACITY:
+    "campaigns size is more than your capacity",
+};

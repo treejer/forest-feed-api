@@ -6,6 +6,7 @@ import { LensApiErrorMessage } from "src/common/constants";
 import {
   getFollowersCountQuery,
   getIsFollowedByProfileQuery,
+  getPublicationOwnerQuery,
 } from "src/common/graphQuery";
 @Injectable()
 export class LensApiService {
@@ -76,6 +77,44 @@ export class LensApiService {
 
       if (res.data.data && res.data.data.profile) {
         return res.data.data.profile.isFollowing;
+      } else {
+        throw new InternalServerErrorException(
+          LensApiErrorMessage.ERROR_IN_GETTING_RESPONSE
+        );
+      }
+    } catch (error) {
+      console.log("error", error);
+      throw new InternalServerErrorException("Graph failed !!");
+    }
+  }
+
+  async getPublicationOwner(publication_id: string): Promise<string> {
+    if (!this.lensUrl) {
+      throw new InternalServerErrorException(
+        LensApiErrorMessage.LENS_URL_NOT_SET
+      );
+    }
+
+    try {
+      const postBody = {
+        operationName: "Publication",
+        query: getPublicationOwnerQuery(publication_id),
+        variables: {},
+      };
+
+      const res = await axios.post(this.lensUrl, postBody, {
+        headers: {
+          contentType: "application/json",
+        },
+      });
+      console.log("res.data", res.data.data);
+
+      if (
+        res.data.data &&
+        res.data.data.publication &&
+        res.data.data.publication.profile
+      ) {
+        return res.data.data.publication.profile.ownedBy;
       } else {
         throw new InternalServerErrorException(
           LensApiErrorMessage.ERROR_IN_GETTING_RESPONSE

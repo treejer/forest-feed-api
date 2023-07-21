@@ -1,6 +1,7 @@
 import { Controller, Get, Param } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { LensApiService } from "./lens-api.service";
+import { getPublicationOwnerQuery } from "src/common/graphQuery";
 @ApiTags("lens-api")
 @Controller("lens-api")
 export class LensApiController {
@@ -22,5 +23,11 @@ export class LensApiController {
       profile_a,
       profile_b
     );
+  }
+
+  @ApiOperation({ summary: "get publication owner" })
+  @Get("/publication/:publication_id/")
+  getPublicationOwner(@Param("publication_id") publication_id: string) {
+    return this.lensApiService.getPublicationOwner(publication_id);
   }
 }

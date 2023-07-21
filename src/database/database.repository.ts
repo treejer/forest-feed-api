@@ -89,7 +89,7 @@ export abstract class EntityRepository<T extends Document> {
     }
   }
 
-  async create(entityData: unknown): Promise<T> {
+  async create(entityData: Partial<T>): Promise<T> {
     try {
       const entityInstance = new this.entityModel(entityData);
 
