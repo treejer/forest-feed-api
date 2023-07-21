@@ -1,15 +1,13 @@
-export const getFollowersCountQuery = `
+export const getFollowersCountQuery = (profile_id) => {
+  return `
   query Profile {
-      profile(request: { profileId: "0x01" }) {
-        id
-        name
-        bio
-        ownedBy
+      profile(request: { profileId: "${profile_id}" }) {
+
         stats {
           totalFollowers
           totalFollowing
           
         }
-        isFollowing(who:"0x02")
       }
   }`;
+};

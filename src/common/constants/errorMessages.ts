@@ -17,4 +17,5 @@ export const SignatureError = {
 
 export const LensApiErrorMessage = {
   LENS_URL_NOT_SET: "LENS SOURCE URL NOT SET",
+  ERROR_IN_GETTING_RESPONSE: "Error in getting response from lens",
 };

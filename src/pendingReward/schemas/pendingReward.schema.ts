@@ -1,13 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 
 export type PendingRewardDocument = PendingReward & Document;
 
 @Schema()
 export class PendingReward extends Document {
-  @Prop({ type: String, required: true })
-  campaignId;
-
   @Prop({ type: String, required: true })
   from;
 
@@ -15,13 +12,19 @@ export class PendingReward extends Document {
   to;
 
   @Prop({ type: Number, required: true })
-  count;
+  amount;
+
+  @Prop({ type: String, required: true })
+  campaignId;
 
   @Prop({ type: Boolean, default: false, required: true })
   isDistributed;
 
   @Prop({ type: Date, default: new Date(), required: true })
   createdAt;
+
+  @Prop({ type: Date, default: new Date(), required: true })
+  updatedAt;
 }
 
 export const PendingRewardSchema = SchemaFactory.createForClass(PendingReward);

@@ -3,16 +3,20 @@ import { ConfigService } from "@nestjs/config";
 import axios from "axios";
 import { LensApiErrorMessage } from "src/common/constants";
 
-import { getFollowersCountQuery } from "src/common/graphQuery/getFollowersCount";
+import {
+  getFollowersCountQuery,
+  getIsFollowedByProfileQuery,
+} from "src/common/graphQuery";
 @Injectable()
 export class LensApiService {
-  constructor(private config: ConfigService) {}
+  private readonly lensUrl;
 
-  async getFollowersCount(profileId: string) {
-    const lensUrl = this.config.get<string>("LENS_URL");
-    console.log("lesn", lensUrl);
+  constructor(private config: ConfigService) {
+    this.lensUrl = this.config.get<string>("LENS_URL");
+  }
 
-    if (!lensUrl) {
+  async getFollowersCount(profileId: string): Promise<number> {
+    if (!this.lensUrl) {
       throw new InternalServerErrorException(
         LensApiErrorMessage.LENS_URL_NOT_SET
       );
@@ -21,20 +25,62 @@ export class LensApiService {
     try {
       const postBody = {
         operationName: "Profile",
-        query: getFollowersCountQuery.replace(
-          /PROFILE_ID/g,
-          profileId.toLowerCase()
-        ),
+        query: getFollowersCountQuery(profileId),
         variables: {},
       };
-      console.log("post", postBody);
 
-      const res = await axios.post(lensUrl, postBody, {
+      const res = await axios.post(this.lensUrl, postBody, {
         headers: {
           contentType: "application/json",
         },
       });
-      console.log("res", res.data.data);
+
+      if (
+        res.data.data &&
+        res.data.data.profile &&
+        res.data.data.profile.stats
+      ) {
+        return res.data.data.profile.stats.totalFollowers;
+      } else {
+        throw new InternalServerErrorException(
+          LensApiErrorMessage.ERROR_IN_GETTING_RESPONSE
+        );
+      }
+    } catch (error) {
+      throw new InternalServerErrorException("Graph failed !!");
+    }
+  }
+
+  async getProfileAFollowedByProfileB(
+    profile_a: string,
+    profile_b: string
+  ): Promise<boolean> {
+    if (!this.lensUrl) {
+      throw new InternalServerErrorException(
+        LensApiErrorMessage.LENS_URL_NOT_SET
+      );
+    }
+
+    try {
+      const postBody = {
+        operationName: "Profile",
+        query: getIsFollowedByProfileQuery(profile_a, profile_b),
+        variables: {},
+      };
+
+      const res = await axios.post(this.lensUrl, postBody, {
+        headers: {
+          contentType: "application/json",
+        },
+      });
+
+      if (res.data.data && res.data.data.profile) {
+        return res.data.data.profile.isFollowing;
+      } else {
+        throw new InternalServerErrorException(
+          LensApiErrorMessage.ERROR_IN_GETTING_RESPONSE
+        );
+      }
     } catch (error) {
       console.log("error", error);
       throw new InternalServerErrorException("Graph failed !!");

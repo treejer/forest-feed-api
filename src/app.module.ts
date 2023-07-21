@@ -22,7 +22,7 @@ import { QueueModule } from "./queue/queue.module";
     DatabaseModule,
     UserModule,
     AuthModule,
-    // SchedulerModule,
+    SchedulerModule,
     PendingRewardModule,
     LensApiModule,
     QueueModule,

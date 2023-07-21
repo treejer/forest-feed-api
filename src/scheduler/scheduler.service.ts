@@ -16,8 +16,18 @@ export class SchedulerService implements OnModuleInit {
     // Schedule the recurring task to run every 1s
     cron.schedule("*/5 * * * * *", async () => {
       try {
-        await this.pendingRewardService.getPendingRewards();
-        await this.web3Service.distributeReward("", "", 2, "");
+        console.log("mahdi");
+
+        // await this.pendingRewardService.getPendingRewards();
+        // await this.web3Service.distributeReward("", "", 2, "");
+      } catch (error) {
+        console.error("error", error);
+      }
+    });
+
+    cron.schedule("*/1 * * * * *", async () => {
+      try {
+        console.log("ali");
       } catch (error) {
         console.error("error", error);
       }
