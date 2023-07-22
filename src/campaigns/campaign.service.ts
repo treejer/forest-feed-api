@@ -57,10 +57,13 @@ export class CampaignService {
 
     const user = await this.userService.findUserByWallet(userWallet);
 
+    const totalBalance = user.totalBalance;
+
     const activeCampaignsCapacity =
       await this.getActiveCamapaingsTotalCapacityByCreator(userWallet);
-    const notDitributedPendingRewardsForDeactiveCampaingns =
-      await this.getNotDistributedPendingReardsCapacityForDeactiveCamapaignsByCreator(
+
+    const notDistributedPendingRewardsForDeactiveCampaigns =
+      await this.getNotDistributedPendingRewardsCapacityForDeactiveCampaignsByCreator(
         userWallet
       );
 
@@ -68,12 +71,10 @@ export class CampaignService {
       userWallet
     );
 
-    const totalBalance = user.totalBalance;
-
     const finalCapacity =
       totalBalance -
       (activeCampaignsCapacity +
-        notDitributedPendingRewardsForDeactiveCampaingns +
+        notDistributedPendingRewardsForDeactiveCampaigns +
         totalPendingWithdraw);
 
     if (input.campaignSize > finalCapacity) {
@@ -87,6 +88,92 @@ export class CampaignService {
       creator: userWallet,
     });
     return createdData;
+  }
+
+  async activateCampaign(campaignId: string, user: JwtUserDto) {
+    //check user is campaign creator
+    const userWallet = user.walletAddress;
+
+    const campaign = await this.getCampaignById(campaignId);
+
+    if (campaign.creator !== userWallet) {
+      throw new ForbiddenException(
+        CampaignErrorMessage.CALLER_IS_NOT_CAMPAIGN_CREATOR
+      );
+    }
+
+    //check no active campaign
+
+    let exists = await this.campaignRepository.findOne({
+      creator: userWallet,
+      publicationId: campaign.publicationId,
+      status: CampaignStatus.ACTIVE,
+    });
+
+    if (exists) {
+      throw new ConflictException(
+        CampaignErrorMessage.PUBLICATION_HAS_ACTIVE_CAMPAIGN
+      );
+    }
+
+    //check user has capacity
+    //TODO: must check and fix calculation of this section (user capacity)
+    const userData = await this.userService.findUserByWallet(userWallet);
+
+    const totalBalance = userData.totalBalance;
+
+    const activeCampaignsCapacity =
+      await this.getActiveCamapaingsTotalCapacityByCreator(userWallet);
+
+    const notDistributedPendingRewardsForDeactiveCampaigns =
+      await this.getNotDistributedPendingRewardsCapacityForDeactiveCampaignsByCreator(
+        userWallet
+      );
+
+    const totalPendingWithdraw = await this.getPendingWithdrawsCapacity(
+      userWallet
+    );
+
+    const finalCapacity =
+      totalBalance -
+      (activeCampaignsCapacity +
+        notDistributedPendingRewardsForDeactiveCampaigns +
+        totalPendingWithdraw);
+
+    if (campaign.campaignSize > finalCapacity) {
+      throw new ForbiddenException(
+        CampaignErrorMessage.CAMPAIGNS_SIZE_IS_MORE_THAN_YOUR_CAPACITY
+      );
+    }
+
+    //update campaign status
+    await this.updateCampaignStatusById(campaignId, CampaignStatus.ACTIVE);
+  }
+  async deactivateCampaign(campaignId: string, user: JwtUserDto) {
+    //check user is campaign creator
+
+    const userWallet = user.walletAddress;
+
+    const campaign = await this.getCampaignById(campaignId);
+
+    if (campaign.creator !== userWallet) {
+      throw new ForbiddenException(
+        CampaignErrorMessage.CALLER_IS_NOT_CAMPAIGN_CREATOR
+      );
+    }
+
+    await this.updateCampaignStatusById(campaignId, CampaignStatus.DEACTIVE);
+  }
+
+  async getCampaignById(campaignId: string): Promise<Campaign> {
+    return await this.campaignRepository.findOne({ _id: campaignId });
+  }
+
+  async updateCampaignStatusById(campaignId: string, newStatus: number) {
+    return await this.campaignRepository.updateOne(
+      { _id: campaignId },
+      { $set: { status: newStatus } }
+    );
   }
 
   async getActiveCamapaingsTotalCapacityByCreator(
@@ -107,11 +194,11 @@ export class CampaignService {
     return total;
   }
 
-  async getNotDistributedPendingReardsCapacityForDeactiveCamapaignsByCreator(
+  async getNotDistributedPendingRewardsCapacityForDeactiveCampaignsByCreator(
     creator: string
   ) {
     const inactiveCampaigns = await this.campaignRepository.find({
-      status: CampaignStatus.DEACTICE,
+      status: CampaignStatus.DEACTIVE,
       creator,
     });
 

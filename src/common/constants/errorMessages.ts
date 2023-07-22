@@ -26,4 +26,6 @@ export const CampaignErrorMessage = {
   CREATOR_IS_NOT_OWNER: "campaign creator is not publication owner",
   CAMPAIGNS_SIZE_IS_MORE_THAN_YOUR_CAPACITY:
     "campaigns size is more than your capacity",
+  CALLER_IS_NOT_CAMPAIGN_CREATOR:
+    "Invalid access! caller is not campaign creator",
 };

@@ -1,5 +1,5 @@
 export enum CampaignStatus {
   ACTIVE = 0,
-  DEACTICE,
+  DEACTIVE,
   FINISHED,
 }
