@@ -88,7 +88,116 @@ export class CampaignController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
   @Post("campaign")
-  loginWithWallet(@Body() dto: CreateCampaignDto, @User() user: JwtUserDto) {
+  createCampaign(@Body() dto: CreateCampaignDto, @User() user: JwtUserDto) {
     return this.campaignService.createCampaign(dto, user);
+  }
+  //-------------------------------------------------------------------------------
+  @ApiOperation({ summary: "activate campaign" })
+  @ApiResponse({
+    status: 201,
+    description: "campaign activated successfully",
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for Invalid access or capacity error.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: [
+            CampaignErrorMessage.CALLER_IS_NOT_CAMPAIGN_CREATOR,
+            CampaignErrorMessage.CAMPAIGNS_SIZE_IS_MORE_THAN_YOUR_CAPACITY,
+          ],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: "active publication exists",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: CampaignErrorMessage.PUBLICATION_HAS_ACTIVE_CAMPAIGN,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard("jwt"))
+  @Post("campaign/:id/activate")
+  activateCampaign(@Param() id: string, @User() user: JwtUserDto) {
+    return this.campaignService.activateCampaign(id, user);
+  }
+
+  //-------------------------------------------------------------------------------
+  @ApiOperation({ summary: "deactivate campaign" })
+  @ApiResponse({
+    status: 201,
+    description: "campaign deactivated successfully",
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for Invalid access or capacity error.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: [CampaignErrorMessage.CALLER_IS_NOT_CAMPAIGN_CREATOR],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard("jwt"))
+  @Post("campaign/:id/deactivate")
+  deactivateCampaign(
+    @Param("id") campaignId: string,
+    @User() user: JwtUserDto
+  ) {
+    return this.campaignService.deactivateCampaign(campaignId, user);
   }
 }
