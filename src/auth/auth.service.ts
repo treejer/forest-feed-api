@@ -14,7 +14,6 @@ import { AuthErrorMessages, Messages } from "./../common/constants";
 import {
   getRandomNonce,
   checkPublicKey,
-  getCheckedSumAddress,
   recoverPublicAddressfromSignature,
 } from "./../common/helpers";
 import { LoginResultDto, NonceResultDto } from "./dtos";
@@ -28,12 +27,12 @@ export class AuthService {
   ) {}
 
   async getNonce(wallet: string): Promise<NonceResultDto> {
-    const checkedSumWallet = getCheckedSumAddress(wallet);
+    const userWallet = wallet.toLowerCase();
 
-    if (!checkPublicKey(checkedSumWallet))
+    if (!checkPublicKey(userWallet))
       throw new BadRequestException(AuthErrorMessages.INVALID_WALLET);
 
-    let user = await this.userService.findUserByWallet(checkedSumWallet);
+    let user = await this.userService.findUserByWallet(userWallet);
 
     const nonce = getRandomNonce();
 
@@ -46,7 +45,7 @@ export class AuthService {
 
     const newUser = await this.userService.create({
       nonce,
-      walletAddress: checkedSumWallet,
+      walletAddress: userWallet,
       plantingNonce: 1,
     });
 
@@ -59,12 +58,11 @@ export class AuthService {
     walletAddress: string,
     signature: string
   ): Promise<LoginResultDto> {
-    const checkedSumWallet = getCheckedSumAddress(walletAddress);
-
-    if (!checkPublicKey(checkedSumWallet))
+    const userWallet = walletAddress.toLowerCase();
+    if (!checkPublicKey(userWallet))
       throw new BadRequestException(AuthErrorMessages.INVALID_WALLET);
 
-    const user = await this.userService.findUserByWallet(checkedSumWallet, {
+    const user = await this.userService.findUserByWallet(userWallet, {
       _id: 1,
       nonce: 1,
     });
@@ -79,7 +77,7 @@ export class AuthService {
       msg
     );
 
-    if (getCheckedSumAddress(recoveredAddress) !== checkedSumWallet)
+    if (recoveredAddress.toLowerCase() !== userWallet)
       throw new ForbiddenException(AuthErrorMessages.INVALID_CREDENTIALS);
 
     const nonce: number = getRandomNonce();
@@ -87,7 +85,7 @@ export class AuthService {
     await this.userService.updateUserById(user._id, { nonce });
 
     return {
-      access_token: await this.getAccessToken(user._id, checkedSumWallet),
+      access_token: await this.getAccessToken(user._id, userWallet),
     };
   }
 

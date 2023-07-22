@@ -49,7 +49,7 @@ export class CampaignService {
       input.publicationId
     );
 
-    if (campaignCreator.toLowerCase() != userWallet) {
+    if (campaignCreator != userWallet) {
       throw new ForbiddenException(CampaignErrorMessage.CREATOR_IS_NOT_OWNER);
     }
 

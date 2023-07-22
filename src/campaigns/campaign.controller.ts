@@ -1,5 +1,11 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import {
   AuthErrorMessages,
   CampaignErrorMessage,
@@ -79,6 +85,7 @@ export class CampaignController {
       },
     },
   })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
   @Post("campaign")
   loginWithWallet(@Body() dto: CreateCampaignDto, @User() user: JwtUserDto) {

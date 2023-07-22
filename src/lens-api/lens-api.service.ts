@@ -114,7 +114,7 @@ export class LensApiService {
         res.data.data.publication &&
         res.data.data.publication.profile
       ) {
-        return res.data.data.publication.profile.ownedBy;
+        return res.data.data.publication.profile.ownedBy.toLowerCase();
       } else {
         throw new InternalServerErrorException(
           LensApiErrorMessage.ERROR_IN_GETTING_RESPONSE
