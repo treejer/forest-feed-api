@@ -16,12 +16,10 @@ export class PendingRewardService {
   }
 
   async getPendingRewards(): Promise<PendingReward[]> {
-    console.log("ali 2");
-
     return await this.pendingRewardRepository.find({ isDistributed: false });
   }
 
-  async getNotDistributedPendingRewardsForCampaingIds(
+  async getNotDistributedPendingRewardsForCampaignIds(
     campaignIds: string[]
   ): Promise<PendingReward[]> {
     const pendingRewards = await this.pendingRewardRepository.find({
@@ -30,5 +28,12 @@ export class PendingRewardService {
     });
 
     return pendingRewards;
+  }
+
+  async getNotDistributedPendingRewardsCountForCampaign(campaignId) {
+    return this.pendingRewardRepository.count({
+      campaignId,
+      isDistributed: false,
+    });
   }
 }

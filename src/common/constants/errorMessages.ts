@@ -28,4 +28,6 @@ export const CampaignErrorMessage = {
     "campaigns size is more than your capacity",
   CALLER_IS_NOT_CAMPAIGN_CREATOR:
     "Invalid access! caller is not campaign creator",
+  PENDING_REWARD_FOR_CAMPAIGN: "there is pending reward for this campaign",
+  INVALID_CAMPAIGN_STATUS: "invalid campaign status",
 };

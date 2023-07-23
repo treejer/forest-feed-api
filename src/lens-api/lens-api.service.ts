@@ -107,7 +107,6 @@ export class LensApiService {
           contentType: "application/json",
         },
       });
-      console.log("res.data", res.data.data);
 
       if (
         res.data.data &&

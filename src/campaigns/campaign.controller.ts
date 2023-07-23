@@ -114,6 +114,7 @@ export class CampaignController {
         schema: {
           format: "text/plain",
           example: [
+            CampaignErrorMessage.INVALID_CAMPAIGN_STATUS,
             CampaignErrorMessage.CALLER_IS_NOT_CAMPAIGN_CREATOR,
             CampaignErrorMessage.CAMPAIGNS_SIZE_IS_MORE_THAN_YOUR_CAPACITY,
           ],
@@ -148,7 +149,7 @@ export class CampaignController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
   @Post("campaign/:id/activate")
-  activateCampaign(@Param() id: string, @User() user: JwtUserDto) {
+  activateCampaign(@Param("id") id: string, @User() user: JwtUserDto) {
     return this.campaignService.activateCampaign(id, user);
   }
 
@@ -174,7 +175,10 @@ export class CampaignController {
       "text/plain": {
         schema: {
           format: "text/plain",
-          example: [CampaignErrorMessage.CALLER_IS_NOT_CAMPAIGN_CREATOR],
+          example: [
+            CampaignErrorMessage.INVALID_CAMPAIGN_STATUS,
+            CampaignErrorMessage.CALLER_IS_NOT_CAMPAIGN_CREATOR,
+          ],
         },
       },
     },
