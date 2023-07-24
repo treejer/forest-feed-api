@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -16,6 +24,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { JwtUserDto } from "src/auth/dtos";
 import { User } from "src/user/decorators";
 import { CreateCampaignResultDto, CreateCampaignDto } from "./dto";
+import { Campaign } from "./schemas";
 @ApiTags("campaign")
 @Controller()
 export class CampaignController {

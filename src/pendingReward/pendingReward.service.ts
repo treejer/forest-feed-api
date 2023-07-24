@@ -19,6 +19,12 @@ export class PendingRewardService {
     return await this.pendingRewardRepository.find({ isDistributed: false });
   }
 
+  async getPendingRewardsForCampaign(
+    campaignId: string
+  ): Promise<PendingReward[]> {
+    return await this.pendingRewardRepository.find({ campaignId });
+  }
+
   async getNotDistributedPendingRewardsForCampaignIds(
     campaignIds: string[]
   ): Promise<PendingReward[]> {

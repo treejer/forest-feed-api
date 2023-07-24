@@ -2,6 +2,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
 } from "@nestjs/common";
 
 import { CampaignRepository } from "./campaign.repository";
@@ -14,6 +15,7 @@ import { UserService } from "src/user/user.service";
 import { PendingRewardService } from "src/pendingReward/pendingReward.service";
 import { PendingWithdrawService } from "src/pendingWithdraws/pendingWithdraws.service";
 import { JwtUserDto } from "src/auth/dtos";
+import { CampaignDetailResultDto } from "./dto/campaign-detail-result.dto";
 
 @Injectable()
 export class CampaignService {
@@ -195,6 +197,47 @@ export class CampaignService {
 
   async getCampaignById(campaignId: string): Promise<Campaign> {
     return await this.campaignRepository.findOne({ _id: campaignId });
+  }
+
+  async getMyCampaigns(user: JwtUserDto, filters): Promise<Campaign[]> {
+    const filterQuery = {
+      ...filters,
+      creator: user.walletAddress,
+    };
+
+    return await this.campaignRepository.sort(
+      filterQuery,
+      { createdAt: 1 },
+      {}
+    );
+  }
+
+  async getCampaignPendingDetails(
+    campaignId: string,
+    user: JwtUserDto
+  ): Promise<CampaignDetailResultDto> {
+    const campaign = await this.campaignRepository.findOne({ _id: campaignId });
+    if (!campaign) {
+      throw new NotFoundException(CampaignErrorMessage.NOT_FOUND);
+    }
+
+    if (campaign.creator != user.walletAddress) {
+      throw new ForbiddenException(CampaignErrorMessage.INVALID_ACCESS);
+    }
+
+    const pendingRewards =
+      await this.pendingRewardService.getPendingRewardsForCampaign(campaignId);
+
+    return {
+      campaignSize: campaign.campaignSize,
+      awardedCount: campaign.awardedCount,
+      isFollowerOnly: campaign.isFollowerOnly,
+      minimumFollower: campaign.minFollower,
+      status: campaign.status,
+      createdAt: campaign.createdAt,
+      updatedAt: campaign.updatedAt,
+      pendingRewards,
+    };
   }
 
   async updateCampaignStatusById(campaignId: string, newStatus: number) {

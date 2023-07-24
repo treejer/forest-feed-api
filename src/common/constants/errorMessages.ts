@@ -30,4 +30,6 @@ export const CampaignErrorMessage = {
     "Invalid access! caller is not campaign creator",
   PENDING_REWARD_FOR_CAMPAIGN: "there is pending reward for this campaign",
   INVALID_CAMPAIGN_STATUS: "invalid campaign status",
+  INVALID_ACCESS: "invalid access",
+  NOT_FOUND: "campaign not found",
 };
