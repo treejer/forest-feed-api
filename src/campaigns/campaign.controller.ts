@@ -25,6 +25,8 @@ import { JwtUserDto } from "src/auth/dtos";
 import { User } from "src/user/decorators";
 import { CreateCampaignResultDto, CreateCampaignDto } from "./dto";
 import { Campaign } from "./schemas";
+import { MyCampaignResultDto } from "./dto/my-campaign-result.dto";
+import { CampaignDetailResultDto } from "./dto/campaign-detail-result.dto";
 @ApiTags("campaign")
 @Controller()
 export class CampaignController {
@@ -212,5 +214,112 @@ export class CampaignController {
     @User() user: JwtUserDto
   ) {
     return this.campaignService.deactivateCampaign(campaignId, user);
+  }
+  //-------------------------------------------------------------------------------
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "get campaigns for user" })
+  @ApiResponse({
+    status: 200,
+    description: "get campaigns of user",
+    type: MyCampaignResultDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @ApiQuery({ name: "filters", required: false, type: String })
+  @UseGuards(AuthGuard("jwt"))
+  @Get("campaign/my-campaign")
+  getMyCampaigns(
+    @User() user: JwtUserDto,
+    @Query("skip") skip: number,
+    @Query("limit") limit: number,
+    @Query("filters") filters?: string
+  ) {
+    if (!filters || filters.length === 0) filters = "{}";
+
+    try {
+      filters = JSON.parse(decodeURIComponent(filters));
+    } catch (error) {
+      filters = JSON.parse(decodeURIComponent("{}"));
+    }
+
+    return this.campaignService.getMyCampaigns(user, skip, limit, filters);
+  }
+
+  //-------------------------------------------------------------------------------
+  @ApiOperation({ summary: "get campaign detail" })
+  @ApiResponse({
+    status: 200,
+    description: "get campaign detail",
+    type: CampaignDetailResultDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for Invalid access.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: CampaignErrorMessage.INVALID_ACCESS,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: SwaggerErrors.NOT_FOUND_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: CampaignErrorMessage.NOT_FOUND,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard("jwt"))
+  @Post("campaign/:id/detail")
+  getCampaignDetail(@Param("id") campaignId: string, @User() user: JwtUserDto) {
+    return this.campaignService.getCampaignDetails(campaignId, user);
   }
 }

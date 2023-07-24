@@ -1,29 +1,35 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
 import { IsBoolean, IsDate, IsNumber, IsString } from "class-validator";
-import { PendingRewardResultDTO } from "src/pendingReward/dto";
-import { PendingReward } from "src/pendingReward/schemas";
 
-export class CampaignDetailResultDto {
+export class CampaignResultDto {
   @ApiResponseProperty()
-  @IsNumber()
-  campaignSize: number;
+  @IsString()
+  _id: string;
 
   @ApiResponseProperty()
-  @IsNumber()
-  awardedCount: number;
+  @IsString()
+  publicationId: string;
 
   @ApiResponseProperty()
-  @IsBoolean()
-  isFollowerOnly: boolean;
-
-  @ApiResponseProperty()
-  @IsNumber()
-  minimumFollower: number;
+  @IsString()
+  creator: string;
 
   @ApiResponseProperty()
   @IsNumber()
   status: number;
 
+  @ApiResponseProperty()
+  @IsBoolean()
+  isFollowerOnly: boolean;
+  @ApiResponseProperty()
+  @IsNumber()
+  minFollower: number;
+  @ApiResponseProperty()
+  @IsNumber()
+  awardedCount: number;
+  @ApiResponseProperty()
+  @IsNumber()
+  campaignSize: number;
   @ApiResponseProperty()
   @IsDate()
   createdAt: Date;
@@ -31,6 +37,4 @@ export class CampaignDetailResultDto {
   @ApiResponseProperty()
   @IsDate()
   updatedAt: Date;
-  @ApiResponseProperty({ type: [PendingRewardResultDTO] })
-  pendingRewards: PendingRewardResultDTO[];
 }

@@ -199,20 +199,42 @@ export class CampaignService {
     return await this.campaignRepository.findOne({ _id: campaignId });
   }
 
-  async getMyCampaigns(user: JwtUserDto, filters): Promise<Campaign[]> {
+  async getMyCampaigns(
+    user: JwtUserDto,
+    filters,
+    skip,
+    limit
+  ): Promise<Campaign[]> {
     const filterQuery = {
       ...filters,
       creator: user.walletAddress,
     };
 
-    return await this.campaignRepository.sort(
+    const data = await this.campaignRepository.findWithPaginate(
+      skip * limit,
+      limit,
       filterQuery,
       { createdAt: 1 },
-      {}
+      {
+        _id: 1,
+        signer: 1,
+        nonce: 1,
+        treeId: 1,
+        treeSpecs: 1,
+        treeSpecsJSON: 1,
+        status: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      }
     );
+
+    const count = await this.campaignRepository.count(filterQuery);
+
+    // @ts-ignore
+    return { data, count };
   }
 
-  async getCampaignPendingDetails(
+  async getCampaignDetails(
     campaignId: string,
     user: JwtUserDto
   ): Promise<CampaignDetailResultDto> {
@@ -227,7 +249,6 @@ export class CampaignService {
 
     const pendingRewards =
       await this.pendingRewardService.getPendingRewardsForCampaign(campaignId);
-
     return {
       campaignSize: campaign.campaignSize,
       awardedCount: campaign.awardedCount,
@@ -236,6 +257,7 @@ export class CampaignService {
       status: campaign.status,
       createdAt: campaign.createdAt,
       updatedAt: campaign.updatedAt,
+      //@ts-ignore
       pendingRewards,
     };
   }
