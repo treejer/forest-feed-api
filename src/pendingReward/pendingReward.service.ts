@@ -6,6 +6,7 @@ import { CreatePendingRewardDTO } from "./dto";
 import { CampaignStatus } from "src/campaigns/enum";
 import { CollectionNames } from "src/common/constants";
 import { CampaignService } from "src/campaigns/campaign.service";
+import { JwtUserDto } from "src/auth/dtos";
 
 @Injectable()
 export class PendingRewardService {
@@ -23,6 +24,34 @@ export class PendingRewardService {
     campaignId: string
   ): Promise<PendingReward[]> {
     return await this.pendingRewardRepository.find({ campaignId });
+  }
+
+  async getMyRewards(user: JwtUserDto, skip, limit): Promise<PendingReward[]> {
+    const filterQuery = {
+      to: user.walletAddress,
+      isDistributed: true,
+    };
+
+    const data = await this.pendingRewardRepository.findWithPaginate(
+      skip * limit,
+      limit,
+      filterQuery,
+      { updatedAt: 1 },
+      {
+        _id: 1,
+        from: 1,
+        to: 1,
+        amount: 1,
+        isDistributed: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      }
+    );
+
+    const count = await this.pendingRewardRepository.count(filterQuery);
+
+    // @ts-ignore
+    return { data, count };
   }
 
   async getNotDistributedPendingRewardsForCampaignIds(

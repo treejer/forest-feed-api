@@ -261,7 +261,7 @@ export class CampaignController {
       filters = JSON.parse(decodeURIComponent("{}"));
     }
 
-    return this.campaignService.getMyCampaigns(user, skip, limit, filters);
+    return this.campaignService.getMyCampaigns(user, filters, skip, limit);
   }
 
   //-------------------------------------------------------------------------------

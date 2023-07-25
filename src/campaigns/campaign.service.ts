@@ -51,9 +51,9 @@ export class CampaignService {
       input.publicationId
     );
 
-    if (campaignCreator != userWallet) {
-      throw new ForbiddenException(CampaignErrorMessage.CREATOR_IS_NOT_OWNER);
-    }
+    // if (campaignCreator != userWallet) {
+    //   throw new ForbiddenException(CampaignErrorMessage.CREATOR_IS_NOT_OWNER);
+    // }
 
     //check creator has balance
 
@@ -217,12 +217,10 @@ export class CampaignService {
       { createdAt: 1 },
       {
         _id: 1,
-        signer: 1,
-        nonce: 1,
-        treeId: 1,
-        treeSpecs: 1,
-        treeSpecsJSON: 1,
         status: 1,
+        creator: 1,
+        campaignSize: 1,
+        awardedCount: 1,
         createdAt: 1,
         updatedAt: 1,
       }

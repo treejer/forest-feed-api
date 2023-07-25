@@ -5,6 +5,7 @@ import { PendingReward, PendingRewardSchema } from "./schemas";
 import { MongooseModule } from "@nestjs/mongoose";
 import { DatabaseModule } from "../database/database.module";
 import { PendingRewardRepository } from "./pendingReward.repository";
+import { PendingRewardController } from "./pendingReward.controller";
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -12,7 +13,7 @@ import { PendingRewardRepository } from "./pendingReward.repository";
     ]),
     DatabaseModule,
   ],
-  controllers: [],
+  controllers: [PendingRewardController],
   providers: [PendingRewardService, ConfigService, PendingRewardRepository],
   exports: [PendingRewardService],
 })
