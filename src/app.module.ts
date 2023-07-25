@@ -15,6 +15,8 @@ import { LensApiModule } from "./lens-api/lens-api.module";
 import { SendEmailJob } from "./queue/queue.service";
 import { QueueModule } from "./queue/queue.module";
 import { CampaignModule } from "./campaigns/campaign.module";
+import { EventModule } from "./event/event.module";
+
 @Module({
   imports: [
     BugsnagModule,
@@ -27,6 +29,7 @@ import { CampaignModule } from "./campaigns/campaign.module";
     PendingRewardModule,
     LensApiModule,
     CampaignModule,
+    EventModule,
     // QueueModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
