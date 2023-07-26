@@ -33,3 +33,7 @@ export const CampaignErrorMessage = {
   INVALID_ACCESS: "invalid access",
   NOT_FOUND: "campaign not found",
 };
+
+export const UserApiErrorMessage = {
+  USER_NOT_FOUND: "user not found",
+};

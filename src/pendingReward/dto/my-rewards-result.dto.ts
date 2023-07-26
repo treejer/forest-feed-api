@@ -1,13 +1,8 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
-import { IsArray, IsNumber } from "class-validator";
-import { PendingRewardResultDTO } from "./pending-reward-result.dto";
+import { IResult } from "src/database/interfaces/IResult.interface";
+import { GetMyRewardsDto } from "./get-my-rewards.dto";
 
-export class MyRewardsResultDto {
-  @ApiResponseProperty({ type: [PendingRewardResultDTO] })
-  @IsArray()
-  data: PendingRewardResultDTO[];
-
+export class MyRewardsResultDto extends IResult {
   @ApiResponseProperty()
-  @IsNumber()
-  count: number;
+  data: GetMyRewardsDto;
 }

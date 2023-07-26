@@ -3,6 +3,9 @@ import { AuthService } from "./auth.service";
 import { LoginResultDto, LoginWithWalletDto, NonceResultDto } from "./dtos";
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthErrorMessages, SwaggerErrors } from "src/common/constants";
+import { Result } from "src/database/interfaces/result.interface";
+import { GetNonceDto } from "./dtos/get-nonce.dto";
+import { GetLoginDto } from "./dtos/get-login.dto";
 @ApiTags("auth")
 @Controller()
 export class AuthController {
@@ -39,7 +42,7 @@ export class AuthController {
     },
   })
   @Get("nonce/:wallet")
-  getNonce(@Param("wallet") wallet: string): Promise<NonceResultDto> {
+  getNonce(@Param("wallet") wallet: string): Promise<Result<GetNonceDto>> {
     return this.authService.getNonce(wallet);
   }
 
@@ -105,7 +108,7 @@ export class AuthController {
   loginWithWallet(
     @Param("wallet") wallet: string,
     @Body() dto: LoginWithWalletDto
-  ): Promise<LoginResultDto> {
+  ): Promise<Result<GetLoginDto>> {
     const signature: string = dto.signature;
     return this.authService.loginWithWallet(wallet, signature);
   }

@@ -1,13 +1,9 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
-import { IsArray, IsNumber } from "class-validator";
-import { CampaignResultDto } from "./campaign-result.dto";
+import { GetCampaignDto } from "./get-campaign.dto";
+import { IResult } from "src/database/interfaces/IResult.interface";
+import { GetMyCampaignDto } from "./get-my-campaign.dto";
 
-export class MyCampaignResultDto {
-  @ApiResponseProperty({ type: [CampaignResultDto] })
-  @IsArray()
-  data: CampaignResultDto[];
-
+export class MyCampaignResultDto extends IResult {
   @ApiResponseProperty()
-  @IsNumber()
-  count: number;
+  data: GetMyCampaignDto;
 }

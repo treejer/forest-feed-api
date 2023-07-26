@@ -1,62 +1,24 @@
-import {
-  IsDate,
-  IsEmail,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from "class-validator";
+import { ApiResponseProperty } from "@nestjs/swagger";
+import { IsDate, IsNumber, IsString } from "class-validator";
 
 export class GetUserMeDto {
-  @IsOptional()
   @IsString()
+  @ApiResponseProperty()
   id?: string;
 
-  @IsOptional()
   @IsString()
-  firstName?;
+  @ApiResponseProperty()
+  walletAddress: string;
 
-  @IsOptional()
-  @IsString()
-  lastName?;
-
-  @IsOptional()
-  @IsEmail()
-  @IsString()
-  email?;
-
-  @IsOptional()
-  @IsDate()
-  emailVerifiedAt?;
-
-  @IsOptional()
-  @IsString()
-  idCard?;
-
-  @IsOptional()
-  @IsDate()
-  createdAt?;
-
-  @IsOptional()
-  @IsDate()
-  updatedAt?;
-
-  @IsOptional()
-  @IsString()
-  mobile?;
-
-  @IsOptional()
-  @IsString()
-  mobileCountry?;
-
-  @IsOptional()
-  @IsDate()
-  mobileVerifiedAt?;
-
-  @IsOptional()
   @IsNumber()
-  userStatus?;
+  @ApiResponseProperty()
+  totalBalance: number;
 
-  @IsOptional()
-  @IsNumber()
-  plantingNonce?;
+  @IsDate()
+  @ApiResponseProperty()
+  createdAt: Date;
+
+  @IsDate()
+  @ApiResponseProperty()
+  updatedAt: Date;
 }

@@ -2,31 +2,30 @@ import { Injectable } from "@nestjs/common";
 
 import { PendingRewardRepository } from "./pendingReward.repository";
 import { PendingReward } from "./schemas";
-import { CreatePendingRewardDTO } from "./dto";
+import { CreatePendingRewardDTO, MyRewardsResultDto } from "./dto";
 import { CampaignStatus } from "src/campaigns/enum";
 import { CollectionNames } from "src/common/constants";
 import { CampaignService } from "src/campaigns/campaign.service";
 import { JwtUserDto } from "src/auth/dtos";
+import { Result } from "src/database/interfaces/result.interface";
+import { resultHandler } from "src/common/helpers";
 
 @Injectable()
 export class PendingRewardService {
   constructor(private pendingRewardRepository: PendingRewardRepository) {}
 
-  async createPendingRewards(input: CreatePendingRewardDTO) {
-    await this.pendingRewardRepository.create({ ...input });
+  async createPendingRewards(
+    input: CreatePendingRewardDTO
+  ): Promise<Result<PendingReward>> {
+    const createdData = await this.pendingRewardRepository.create({ ...input });
+    return resultHandler(200, "pending reward Created", createdData);
   }
 
-  async getPendingRewards(): Promise<PendingReward[]> {
-    return await this.pendingRewardRepository.find({ isDistributed: false });
-  }
-
-  async getPendingRewardsForCampaign(
-    campaignId: string
-  ): Promise<PendingReward[]> {
-    return await this.pendingRewardRepository.find({ campaignId });
-  }
-
-  async getMyRewards(user: JwtUserDto, skip, limit): Promise<PendingReward[]> {
+  async getMyRewards(
+    user: JwtUserDto,
+    skip,
+    limit
+  ): Promise<Result<MyRewardsResultDto>> {
     const filterQuery = {
       to: user.walletAddress,
       isDistributed: true,
@@ -50,25 +49,57 @@ export class PendingRewardService {
 
     const count = await this.pendingRewardRepository.count(filterQuery);
 
-    // @ts-ignore
-    return { data, count };
+    return resultHandler(200, "user rewards", {
+      pendingRewardList: data,
+      count,
+    });
+  }
+
+  async getPendingRewards(): Promise<Result<PendingReward[]>> {
+    const pendingRewardList = await this.pendingRewardRepository.find({
+      isDistributed: false,
+    });
+
+    return resultHandler(200, "pending rewards list", pendingRewardList);
+  }
+
+  async getPendingRewardsForCampaign(
+    campaignId: string
+  ): Promise<Result<PendingReward[]>> {
+    const pendingRewardList = await this.pendingRewardRepository.find({
+      campaignId,
+    });
+
+    return resultHandler(200, "pending rewards list", pendingRewardList);
   }
 
   async getNotDistributedPendingRewardsForCampaignIds(
     campaignIds: string[]
-  ): Promise<PendingReward[]> {
+  ): Promise<Result<PendingReward[]>> {
     const pendingRewards = await this.pendingRewardRepository.find({
       campaignId: { $in: campaignIds },
       isDistributed: false,
     });
 
-    return pendingRewards;
+    return resultHandler(
+      200,
+      "not distributed pending rewards for campaigns",
+      pendingRewards
+    );
   }
 
-  async getNotDistributedPendingRewardsCountForCampaign(campaignId) {
-    return this.pendingRewardRepository.count({
+  async getNotDistributedPendingRewardsCountForCampaign(
+    campaignId
+  ): Promise<Result<number>> {
+    const result = this.pendingRewardRepository.count({
       campaignId,
       isDistributed: false,
     });
+
+    return resultHandler(
+      200,
+      "not distributed pending rewards count for campaign",
+      result
+    );
   }
 }

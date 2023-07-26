@@ -20,7 +20,11 @@ export class RolesGuard implements CanActivate {
 
     const user = await this.userService.findUserById(request.user.userId);
 
-    if (roles.includes(user.userRole)) {
+    if (user.statusCode != 200) {
+      return false;
+    }
+
+    if (roles.includes(user.data.userRole)) {
       return true;
     }
 

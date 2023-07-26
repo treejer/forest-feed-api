@@ -1,10 +1,9 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
 import { IsString } from "class-validator";
 import { IResult } from "src/database/interfaces/IResult.interface";
-import { GetCreateCampaignDto } from "./get-create-campaign.dto";
+import { GetNonceDto } from "./get-nonce.dto";
 
-export class CreateCampaignResultDto extends IResult {
+export class NonceResultDto extends IResult {
   @ApiResponseProperty()
-  @IsString()
-  data: GetCreateCampaignDto;
+  data: GetNonceDto;
 }

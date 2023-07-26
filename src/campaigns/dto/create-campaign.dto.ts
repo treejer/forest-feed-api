@@ -4,6 +4,10 @@ import { IsBoolean, IsNumber, IsString } from "class-validator";
 export class CreateCampaignDto {
   @ApiProperty()
   @IsString()
+  title: string;
+
+  @ApiProperty()
+  @IsString()
   publicationId: string;
 
   @ApiProperty()

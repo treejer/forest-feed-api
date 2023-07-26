@@ -8,6 +8,8 @@ import {
   getIsFollowedByProfileQuery,
   getPublicationOwnerQuery,
 } from "src/common/graphQuery";
+import { resultHandler } from "src/common/helpers";
+import { Result } from "src/database/interfaces/result.interface";
 @Injectable()
 export class LensApiService {
   private readonly lensUrl;
@@ -16,7 +18,7 @@ export class LensApiService {
     this.lensUrl = this.config.get<string>("LENS_URL");
   }
 
-  async getFollowersCount(profileId: string): Promise<number> {
+  async getFollowersCount(profileId: string): Promise<Result<number>> {
     if (!this.lensUrl) {
       throw new InternalServerErrorException(
         LensApiErrorMessage.LENS_URL_NOT_SET
@@ -41,7 +43,11 @@ export class LensApiService {
         res.data.data.profile &&
         res.data.data.profile.stats
       ) {
-        return res.data.data.profile.stats.totalFollowers;
+        return resultHandler(
+          200,
+          "get followers count",
+          res.data.data.profile.stats.totalFollowers
+        );
       } else {
         throw new InternalServerErrorException(
           LensApiErrorMessage.ERROR_IN_GETTING_RESPONSE
@@ -55,7 +61,7 @@ export class LensApiService {
   async getProfileAFollowedByProfileB(
     profile_a: string,
     profile_b: string
-  ): Promise<boolean> {
+  ): Promise<Result<boolean>> {
     if (!this.lensUrl) {
       throw new InternalServerErrorException(
         LensApiErrorMessage.LENS_URL_NOT_SET
@@ -76,7 +82,11 @@ export class LensApiService {
       });
 
       if (res.data.data && res.data.data.profile) {
-        return res.data.data.profile.isFollowing;
+        return resultHandler(
+          200,
+          "get profile a followed by profile b",
+          res.data.data.profile.isFollowing
+        );
       } else {
         throw new InternalServerErrorException(
           LensApiErrorMessage.ERROR_IN_GETTING_RESPONSE
@@ -88,7 +98,7 @@ export class LensApiService {
     }
   }
 
-  async getPublicationOwner(publication_id: string): Promise<string> {
+  async getPublicationOwner(publication_id: string): Promise<Result<string>> {
     if (!this.lensUrl) {
       throw new InternalServerErrorException(
         LensApiErrorMessage.LENS_URL_NOT_SET
@@ -113,7 +123,11 @@ export class LensApiService {
         res.data.data.publication &&
         res.data.data.publication.profile
       ) {
-        return res.data.data.publication.profile.ownedBy.toLowerCase();
+        return resultHandler(
+          200,
+          "get publication owner",
+          res.data.data.publication.profile.ownedBy.toLowerCase()
+        );
       } else {
         throw new InternalServerErrorException(
           LensApiErrorMessage.ERROR_IN_GETTING_RESPONSE

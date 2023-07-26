@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -27,6 +28,7 @@ import { CreateCampaignResultDto, CreateCampaignDto } from "./dto";
 import { Campaign } from "./schemas";
 import { MyCampaignResultDto } from "./dto/my-campaign-result.dto";
 import { CampaignDetailResultDto } from "./dto/campaign-detail-result.dto";
+import { IResult } from "src/database/interfaces/IResult.interface";
 @ApiTags("campaign")
 @Controller()
 export class CampaignController {
@@ -107,6 +109,7 @@ export class CampaignController {
   @ApiResponse({
     status: 201,
     description: "campaign activated successfully",
+    type: IResult,
   })
   @ApiResponse({
     status: 401,
@@ -159,7 +162,7 @@ export class CampaignController {
   })
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
-  @Post("campaign/:id/activate")
+  @Patch("campaign/:id/activate")
   activateCampaign(@Param("id") id: string, @User() user: JwtUserDto) {
     return this.campaignService.activateCampaign(id, user);
   }
@@ -169,6 +172,7 @@ export class CampaignController {
   @ApiResponse({
     status: 201,
     description: "campaign deactivated successfully",
+    type: IResult,
   })
   @ApiResponse({
     status: 401,
@@ -208,7 +212,7 @@ export class CampaignController {
   })
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
-  @Post("campaign/:id/deactivate")
+  @Patch("campaign/:id/deactivate")
   deactivateCampaign(
     @Param("id") campaignId: string,
     @User() user: JwtUserDto
@@ -318,7 +322,7 @@ export class CampaignController {
   })
   @ApiBearerAuth()
   @UseGuards(AuthGuard("jwt"))
-  @Post("campaign/:id/detail")
+  @Get("campaign/:id/detail")
   getCampaignDetail(@Param("id") campaignId: string, @User() user: JwtUserDto) {
     return this.campaignService.getCampaignDetails(campaignId, user);
   }

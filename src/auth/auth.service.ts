@@ -15,8 +15,13 @@ import {
   getRandomNonce,
   checkPublicKey,
   recoverPublicAddressfromSignature,
+  responseHandler,
+  resultHandler,
 } from "./../common/helpers";
 import { LoginResultDto, NonceResultDto } from "./dtos";
+import { Result } from "src/database/interfaces/result.interface";
+import { GetNonceDto } from "./dtos/get-nonce.dto";
+import { GetLoginDto } from "./dtos/get-login.dto";
 
 @Injectable()
 export class AuthService {
@@ -26,7 +31,7 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
-  async getNonce(wallet: string): Promise<NonceResultDto> {
+  async getNonce(wallet: string): Promise<Result<GetNonceDto>> {
     const userWallet = wallet.toLowerCase();
 
     if (!checkPublicKey(userWallet))
@@ -36,28 +41,28 @@ export class AuthService {
 
     const nonce = getRandomNonce();
 
-    if (user) {
-      return {
-        message: Messages.SIGN_MESSAGE + user.nonce.toString(),
-        userId: user._id,
-      };
+    if (user.statusCode == 200) {
+      return resultHandler(200, "nonce generated", {
+        message: Messages.SIGN_MESSAGE + user.data.nonce.toString(),
+        userId: user.data._id,
+      });
     }
 
-    const newUser = await this.userService.create({
+    const result = await this.userService.create({
       nonce,
       walletAddress: userWallet,
       plantingNonce: 1,
     });
 
-    return {
-      message: Messages.SIGN_MESSAGE + newUser.nonce.toString(),
-      userId: newUser._id,
-    };
+    return resultHandler(200, "nonce generated", {
+      message: Messages.SIGN_MESSAGE + result.data.nonce.toString(),
+      userId: result.data._id,
+    });
   }
   async loginWithWallet(
     walletAddress: string,
     signature: string
-  ): Promise<LoginResultDto> {
+  ): Promise<Result<GetLoginDto>> {
     const userWallet = walletAddress.toLowerCase();
     if (!checkPublicKey(userWallet))
       throw new BadRequestException(AuthErrorMessages.INVALID_WALLET);
@@ -67,9 +72,10 @@ export class AuthService {
       nonce: 1,
     });
 
-    if (!user) throw new NotFoundException(AuthErrorMessages.USER_NOT_EXIST);
+    if (user.statusCode != 200)
+      throw new NotFoundException(AuthErrorMessages.USER_NOT_EXIST);
 
-    const message = Messages.SIGN_MESSAGE + user.nonce.toString();
+    const message = Messages.SIGN_MESSAGE + user.data.nonce.toString();
 
     const msg = `0x${Buffer.from(message, "utf8").toString("hex")}`;
     const recoveredAddress: string = recoverPublicAddressfromSignature(
@@ -82,14 +88,17 @@ export class AuthService {
 
     const nonce: number = getRandomNonce();
 
-    await this.userService.updateUserById(user._id, { nonce });
+    await this.userService.updateUserById(user.data._id, { nonce });
 
-    return {
-      access_token: await this.getAccessToken(user._id, userWallet),
-    };
+    return resultHandler(200, "successful login", {
+      access_token: await this.getAccessToken(user.data._id, userWallet),
+    });
   }
 
-  async getAccessToken(userId: string, walletAddress: string): Promise<string> {
+  private async getAccessToken(
+    userId: string,
+    walletAddress: string
+  ): Promise<string> {
     const payload = { userId, walletAddress };
     try {
       return this.jwtService.signAsync(payload, {

@@ -1,9 +1,8 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
-
 import { IResult } from "src/database/interfaces/IResult.interface";
-import { GetUserMeDto } from "./get-user-me.dto";
+import { GetLoginDto } from "./get-login.dto";
 
-export class GetUserMeResultDto extends IResult {
+export class LoginResultDto extends IResult {
   @ApiResponseProperty()
-  data: GetUserMeDto;
+  data: GetLoginDto;
 }

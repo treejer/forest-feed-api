@@ -1,10 +1,14 @@
 import { ApiResponseProperty } from "@nestjs/swagger";
 import { IsBoolean, IsDate, IsNumber, IsString } from "class-validator";
 
-export class CampaignResultDto {
+export class GetCreateCampaignDto {
   @ApiResponseProperty()
   @IsString()
   _id: string;
+
+  @ApiResponseProperty()
+  @IsString()
+  title: string;
 
   @ApiResponseProperty()
   @IsString()

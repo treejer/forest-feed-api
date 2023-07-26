@@ -16,6 +16,10 @@ import { PendingRewardService } from "src/pendingReward/pendingReward.service";
 import { PendingWithdrawService } from "src/pendingWithdraws/pendingWithdraws.service";
 import { JwtUserDto } from "src/auth/dtos";
 import { CampaignDetailResultDto } from "./dto/campaign-detail-result.dto";
+import { IResult } from "src/database/interfaces/IResult.interface";
+import { responseHandler, resultHandler } from "src/common/helpers";
+import { Result } from "src/database/interfaces/result.interface";
+import { MyCampaignResultDto } from "./dto/my-campaign-result.dto";
 
 @Injectable()
 export class CampaignService {
@@ -30,7 +34,7 @@ export class CampaignService {
   async createCampaign(
     input: CreateCampaignDto,
     jwtInput: JwtUserDto
-  ): Promise<Campaign> {
+  ): Promise<Result<Campaign>> {
     //cehck no active campaign
     const userWallet = jwtInput.walletAddress.toLowerCase();
 
@@ -47,19 +51,18 @@ export class CampaignService {
     }
 
     //check creator is the publication owner
-    let campaignCreator: string = await this.lensApiService.getPublicationOwner(
-      input.publicationId
-    );
+    const publicationOwnerResult =
+      await this.lensApiService.getPublicationOwner(input.publicationId);
 
-    // if (campaignCreator != userWallet) {
-    //   throw new ForbiddenException(CampaignErrorMessage.CREATOR_IS_NOT_OWNER);
-    // }
+    if (publicationOwnerResult.data != userWallet) {
+      throw new ForbiddenException(CampaignErrorMessage.CREATOR_IS_NOT_OWNER);
+    }
 
     //check creator has balance
 
     const user = await this.userService.findUserByWallet(userWallet);
 
-    const totalBalance = user.totalBalance;
+    const totalBalance = user.data.totalBalance;
 
     const activeCampaignsCapacity =
       await this.getActiveCampaignsTotalCapacityByCreator(userWallet);
@@ -89,14 +92,21 @@ export class CampaignService {
       ...input,
       creator: userWallet,
     });
-    return createdData;
+    return resultHandler(200, "campaign created", createdData);
   }
 
-  async activateCampaign(campaignId: string, user: JwtUserDto) {
+  async activateCampaign(
+    campaignId: string,
+    user: JwtUserDto
+  ): Promise<IResult> {
     //check user is campaign creator
     const userWallet = user.walletAddress;
 
-    const campaign = await this.getCampaignById(campaignId);
+    const result = await this.getCampaignById(campaignId);
+    if (result.statusCode !== 200) {
+      throw new NotFoundException(CampaignErrorMessage.NOT_FOUND);
+    }
+    const campaign = result.data;
 
     if (campaign.status != CampaignStatus.DEACTIVE) {
       throw new ForbiddenException(
@@ -126,12 +136,12 @@ export class CampaignService {
 
     //check no pending reward for campaign
 
-    let pendingRewardCount =
+    let notDistributedPendingRewardsResult =
       await this.pendingRewardService.getNotDistributedPendingRewardsCountForCampaign(
         campaignId
       );
 
-    if (pendingRewardCount > 0) {
+    if (notDistributedPendingRewardsResult.data > 0) {
       throw new ForbiddenException(
         CampaignErrorMessage.PENDING_REWARD_FOR_CAMPAIGN
       );
@@ -140,7 +150,7 @@ export class CampaignService {
     //check user has capacity
     const userData = await this.userService.findUserByWallet(userWallet);
 
-    const totalBalance = userData.totalBalance;
+    const totalBalance = userData.data.totalBalance;
 
     const activeCampaignsCapacity =
       await this.getActiveCampaignsTotalCapacityByCreator(userWallet);
@@ -169,15 +179,22 @@ export class CampaignService {
     //update campaign status
     await this.updateCampaignStatusById(campaignId, CampaignStatus.ACTIVE);
 
-    return "campaign activated";
+    return responseHandler(200, "campaign activated");
   }
-  async deactivateCampaign(campaignId: string, user: JwtUserDto) {
+  async deactivateCampaign(
+    campaignId: string,
+    user: JwtUserDto
+  ): Promise<IResult> {
     //check user is campaign creator
 
     const userWallet = user.walletAddress;
 
-    const campaign = await this.getCampaignById(campaignId);
+    const result = await this.getCampaignById(campaignId);
 
+    if (result.statusCode !== 200) {
+      throw new NotFoundException(CampaignErrorMessage.NOT_FOUND);
+    }
+    const campaign = result.data;
     if (campaign.status != CampaignStatus.ACTIVE) {
       throw new ForbiddenException(
         CampaignErrorMessage.INVALID_CAMPAIGN_STATUS
@@ -192,11 +209,7 @@ export class CampaignService {
 
     await this.updateCampaignStatusById(campaignId, CampaignStatus.DEACTIVE);
 
-    return "campaign deactivated";
-  }
-
-  async getCampaignById(campaignId: string): Promise<Campaign> {
-    return await this.campaignRepository.findOne({ _id: campaignId });
+    return responseHandler(200, "campaign deactivated");
   }
 
   async getMyCampaigns(
@@ -204,7 +217,7 @@ export class CampaignService {
     filters,
     skip,
     limit
-  ): Promise<Campaign[]> {
+  ): Promise<Result<MyCampaignResultDto>> {
     const filterQuery = {
       ...filters,
       creator: user.walletAddress,
@@ -217,6 +230,8 @@ export class CampaignService {
       { createdAt: 1 },
       {
         _id: 1,
+        title: 1,
+        publicationId: 1,
         status: 1,
         creator: 1,
         campaignSize: 1,
@@ -228,14 +243,13 @@ export class CampaignService {
 
     const count = await this.campaignRepository.count(filterQuery);
 
-    // @ts-ignore
-    return { data, count };
+    return resultHandler(200, "campaign list", { campaignList: data, count });
   }
 
   async getCampaignDetails(
     campaignId: string,
     user: JwtUserDto
-  ): Promise<CampaignDetailResultDto> {
+  ): Promise<Result<CampaignDetailResultDto>> {
     const campaign = await this.campaignRepository.findOne({ _id: campaignId });
     if (!campaign) {
       throw new NotFoundException(CampaignErrorMessage.NOT_FOUND);
@@ -247,7 +261,9 @@ export class CampaignService {
 
     const pendingRewards =
       await this.pendingRewardService.getPendingRewardsForCampaign(campaignId);
-    return {
+
+    return resultHandler(200, "campaign details", {
+      title: campaign.title,
       campaignSize: campaign.campaignSize,
       awardedCount: campaign.awardedCount,
       isFollowerOnly: campaign.isFollowerOnly,
@@ -255,19 +271,31 @@ export class CampaignService {
       status: campaign.status,
       createdAt: campaign.createdAt,
       updatedAt: campaign.updatedAt,
-      //@ts-ignore
-      pendingRewards,
-    };
+      pendingRewards: pendingRewards.data,
+    });
   }
 
-  async updateCampaignStatusById(campaignId: string, newStatus: number) {
-    return await this.campaignRepository.updateOne(
+  private async updateCampaignStatusById(
+    campaignId: string,
+    newStatus: number
+  ): Promise<IResult> {
+    await this.campaignRepository.updateOne(
       { _id: campaignId },
       { $set: { status: newStatus } }
     );
+
+    return responseHandler(200, "campaign status updated");
   }
 
-  async getActiveCampaignsTotalCapacityByCreator(
+  private async getCampaignById(campaignId: string): Promise<Result<Campaign>> {
+    const campaign = await this.campaignRepository.findOne({ _id: campaignId });
+    if (!campaign) {
+      return resultHandler(404, "campaign not found", undefined);
+    }
+    return resultHandler(200, "campaign data", campaign);
+  }
+
+  private async getActiveCampaignsTotalCapacityByCreator(
     creator: string
   ): Promise<number> {
     let total = 0;
@@ -285,10 +313,10 @@ export class CampaignService {
     return total;
   }
 
-  async getNotDistributedPendingRewardsCapacityForDeactiveCampaignsByCreator(
+  private async getNotDistributedPendingRewardsCapacityForDeactiveCampaignsByCreator(
     creator: string,
     campaignIdToActivate?: string
-  ) {
+  ): Promise<number> {
     let inactiveCampaigns: Campaign[] = [];
 
     if (campaignIdToActivate) {
@@ -312,14 +340,14 @@ export class CampaignService {
         campaignIds
       );
 
-    for (let index = 0; index < result.length; index++) {
-      total += result[index].amount;
+    for (let index = 0; index < result.data.length; index++) {
+      total += result.data[index].amount;
     }
 
     return total;
   }
 
-  async getPendingWithdrawsCapacity(creator: string): Promise<number> {
+  private async getPendingWithdrawsCapacity(creator: string): Promise<number> {
     let total = 0;
     const result =
       await this.pendingWithdrawService.getPendingWithdrawsForCreator(creator);

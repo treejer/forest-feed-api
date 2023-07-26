@@ -7,6 +7,9 @@ export type CampaignDocument = Campaign & Document;
 @Schema()
 export class Campaign extends Document {
   @Prop({ type: String, required: true })
+  title;
+
+  @Prop({ type: String, required: true })
   publicationId;
 
   @Prop({ type: String, required: true })

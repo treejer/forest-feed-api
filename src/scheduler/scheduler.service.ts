@@ -18,7 +18,6 @@ export class SchedulerService implements OnModuleInit {
       try {
         console.log("mahdi");
 
-        // await this.pendingRewardService.getPendingRewards();
         // await this.web3Service.distributeReward("", "", 2, "");
       } catch (error) {
         console.error("error", error);

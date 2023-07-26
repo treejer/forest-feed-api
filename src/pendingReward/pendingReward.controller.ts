@@ -25,7 +25,7 @@ import { User } from "src/user/decorators";
 
 import { PendingRewardService } from "./pendingReward.service";
 import { MyRewardsResultDto } from "./dto";
-@ApiTags("rewards")
+@ApiTags("reward")
 @Controller()
 export class PendingRewardController {
   constructor(private pendingRewardService: PendingRewardService) {}
