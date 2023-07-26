@@ -16,12 +16,8 @@ export class EventService {
     id:string,
     lastBlockNumber: number
   ): Promise<EditResult> {
-    let lastState = await this.lastStateRepository.findOne({id}, { _id: 1 });
-    let result;
-
-
-    result = await this.lastStateRepository.updateOne(
-      { _id: lastState._id },
+    let result = await this.lastStateRepository.updateOne(
+      { _id: id },
       { lastBlockNumber }
     );
 
@@ -34,6 +30,6 @@ export class EventService {
       { lastBlockNumber: 1, _id: 0 }
     );
 
-    return result ? result.lastBlockNumber : 1;
+    return result ? result.lastBlockNumber + 1: 1;
   }
 }
