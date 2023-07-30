@@ -8,7 +8,12 @@ const Contract = require("./../../abi/Contract.json");
 
 @Injectable()
 export class Web3Service {
+  
   private web3Instance;
+  private web3SInstance;
+  private connectionStatus;
+  private ethereumEvents;
+
   constructor(private config: ConfigService) {
     this.web3Instance = new Web3(
       config.get<string>("NODE_ENV") === "test"
@@ -78,8 +83,13 @@ export class Web3Service {
     return this.web3Instance;
   }
 
-  getWeb3SInstance(url?: string) {
-    let web3SInstance = new Web3(
+  createWeb3SInstance(url,func) {
+
+    if(this.web3SInstance){
+      this.web3SInstance.currentProvider.disconnect();
+    }
+
+    this.web3SInstance = new Web3(
       url
         ? url
         : this.config.get<string>("NODE_ENV") === "test"
@@ -87,15 +97,48 @@ export class Web3Service {
         : this.config.get<string>("WEB3S_PROVIDER")
     );
 
-    web3SInstance.eth.net
+    const provider = this.web3SInstance.currentProvider;
+
+    provider.on("connect", async () => {
+      console.log("web3SInstance: reconnected");
+      this.connectionStatus = true;
+
+      if(this.ethereumEvents){
+        this.ethereumEvents.stop()
+      }
+      
+      this.ethereumEvents = await func(this.web3SInstance)
+    });
+
+    
+
+    provider.on("close", () => {
+      console.log("web3SInstance: connection closed");
+      this.connectionStatus = false;
+      setTimeout(() => {
+        if (!this.connectionStatus) {
+          console.log("closed getWeb3SInstance");
+
+          if(this.ethereumEvents){
+            this.ethereumEvents.stop()
+          }
+
+          // this.bugsnag.notify("closed getWeb3SInstance");
+
+          this.createWeb3SInstance(url,func)
+        }
+      }, 10000);
+
+    });
+
+
+
+    this.web3SInstance.eth.net
       .isListening()
       .then(() => console.log("web3SInstance : is connected"))
       .catch((e) => {
         console.error("web3SInstance : Something went wrong : " + e);
-        throw new InternalServerErrorException(e.message);
       });
-
-    return web3SInstance;
   }
 
   private async constructTransaction(
