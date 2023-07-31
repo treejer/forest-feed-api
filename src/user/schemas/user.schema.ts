@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { Role, UserStatus } from "src/common/constants";
+import { Role } from "src/common/constants";
 
 export type UserDocument = User & Document;
 
@@ -23,6 +23,9 @@ export class User extends Document {
 
   @Prop({ type: Date, default: Date.now, required: true })
   updatedAt;
+
+  @Prop({ type: [String], default: [] })
+  transactions;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

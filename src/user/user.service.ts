@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { CreateUserDto, UserDto, GetUserMeDto } from "./dtos";
-import { User } from "./schemas";
-import { UserRepository } from "./user.repository";
 import { UserApiErrorMessage } from "src/common/constants";
+import { resultHandler } from "src/common/helpers";
 import { responseHandler } from "src/common/helpers/response-handler";
 import { IResult } from "src/database/interfaces/IResult.interface";
 import { Result } from "src/database/interfaces/result.interface";
-import { resultHandler } from "src/common/helpers";
+import { CreateUserDto, GetUserMeDto, UserDto } from "./dtos";
+import { User } from "./schemas";
+import { UserRepository } from "./user.repository";
 
 @Injectable()
 export class UserService {
@@ -20,16 +20,29 @@ export class UserService {
 
   async updateUserBalance(
     walletAddress: string,
-    amount: number
+    amount: number,
+    transaction: string
   ): Promise<IResult> {
-    const user = await this.userRepository.findOne({ walletAddress });
+    const user = await this.userRepository.findOne(
+      { walletAddress },
+      {
+        _id: 1,
+        transactions: 1,
+      }
+    );
+
     if (!user) {
       throw new NotFoundException(UserApiErrorMessage.USER_NOT_FOUND);
     }
 
+    const user = await this.userRepository.findOne({ walletAddress });
+
     await this.userRepository.updateOne(
       { walletAddress },
-      { $set: { totalBalance: user.totalBalance + amount } }
+      {
+        $set: { totalBalance: user.totalBalance + amount },
+        $push: { transactions: transaction },
+      }
     );
 
     return responseHandler(200, "user balance updated");
