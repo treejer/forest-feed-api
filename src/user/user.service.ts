@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { UserApiErrorMessage } from "src/common/constants";
 import { resultHandler } from "src/common/helpers";
 import { responseHandler } from "src/common/helpers/response-handler";
@@ -21,27 +21,45 @@ export class UserService {
   async updateUserBalance(
     walletAddress: string,
     amount: number,
-    transaction: string
+    transactionHash: string
   ): Promise<IResult> {
+
+    console.log("walletAddress",walletAddress);
+    console.log("amount",amount);
+    console.log("transactionHash",transactionHash);
+
+
     const user = await this.userRepository.findOne(
       { walletAddress },
       {
         _id: 1,
         transactions: 1,
+        totalBalance:1,
       }
     );
+
+
+    console.log("user",user);
 
     if (!user) {
       throw new NotFoundException(UserApiErrorMessage.USER_NOT_FOUND);
     }
 
-    const user = await this.userRepository.findOne({ walletAddress });
+    let findTx = user.transactions.find(item => item == transactionHash)
+
+    console.log("findTx",findTx);
+
+    if(findTx){
+      throw new ConflictException(
+        UserApiErrorMessage.TRANSACTION_DUPLICATED
+      );    
+    }
 
     await this.userRepository.updateOne(
       { walletAddress },
       {
-        $set: { totalBalance: user.totalBalance + amount },
-        $push: { transactions: transaction },
+        $inc: { totalBalance: amount },
+        $push: { transactions: transactionHash },
       }
     );
 

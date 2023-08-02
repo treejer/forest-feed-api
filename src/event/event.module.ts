@@ -7,10 +7,12 @@ import { EventService } from "./event.service";
 import { LastStateRepository } from "./lastState.repository";
 import { Listener } from "./listener/listener.event";
 import { LastState, LastStateSchema } from "./schemas";
+import { UserModule } from "src/user/user.module";
 
 @Module({
   imports: [
     Web3Module,
+    UserModule,
     MongooseModule.forFeature([
       { name: LastState.name, schema: LastStateSchema },
     ]),

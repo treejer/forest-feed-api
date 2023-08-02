@@ -36,4 +36,5 @@ export const CampaignErrorMessage = {
 
 export const UserApiErrorMessage = {
   USER_NOT_FOUND: "user not found",
+  TRANSACTION_DUPLICATED:"Transaction Duplicated."
 };
