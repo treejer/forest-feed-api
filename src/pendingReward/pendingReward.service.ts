@@ -102,4 +102,12 @@ export class PendingRewardService {
       result
     );
   }
+  async getPendingReward(filters): Promise<Result<PendingReward>> {
+    const result = await this.pendingRewardRepository.findOne(filters);
+    if (!result) {
+      return resultHandler(404, "no pending rewards", undefined);
+    }
+
+    return resultHandler(200, "pending rewards data", result);
+  }
 }

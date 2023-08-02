@@ -274,6 +274,18 @@ export class CampaignService {
       pendingRewards: pendingRewards.data,
     });
   }
+  async getActiveCampaingByPublicationId(
+    publicationId: string
+  ): Promise<Result<Campaign>> {
+    const campaign = this.campaignRepository.findOne({
+      publicationId,
+      status: CampaignStatus.ACTIVE,
+    });
+    if (!campaign) {
+      return resultHandler(404, "campaign not found", undefined);
+    }
+    return resultHandler(200, "campaign data", campaign);
+  }
 
   private async updateCampaignStatusById(
     campaignId: string,

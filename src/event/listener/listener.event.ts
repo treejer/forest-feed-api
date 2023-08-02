@@ -94,6 +94,12 @@ export class Listener {
             if (event.name === LensEventName.Mirror_CREATED) {
               try {
                 ///-------------------> lens service
+                await this.eventService.handleMirror(
+                  "pubId",
+                  "profileId",
+                  "pubIdPointed",
+                  "profileIdPointed"
+                );
               } catch (error) {
                 reject(error);
                 console.log("TREE_ASSIGNED error", error);
