@@ -37,3 +37,7 @@ export const CampaignErrorMessage = {
 export const UserApiErrorMessage = {
   USER_NOT_FOUND: "user not found",
 };
+
+export const web3Errors = {
+  HIGH_GAS_PRICE: "gas price is high",
+};
