@@ -5,7 +5,7 @@ import { Queue } from "bull";
 import { InjectQueue } from "@nestjs/bull";
 
 @Controller()
-export class AppController {
+export class QueueController {
   constructor(@InjectQueue("emails") private readonly emailQueue: Queue) {}
 
   @Get("send-email")

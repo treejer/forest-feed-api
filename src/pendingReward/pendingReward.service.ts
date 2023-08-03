@@ -1,8 +1,17 @@
 import { Injectable } from "@nestjs/common";
 
-import { PendingRewardRepository } from "./pendingReward.repository";
-import { PendingReward } from "./schemas";
-import { CreatePendingRewardDTO, MyRewardsResultDto } from "./dto";
+import {
+  ConfirmedRewardRepository,
+  PendingRewardRepository,
+  RejectedRewardRepository,
+} from "./pendingReward.repository";
+import { ConfirmedReward, PendingReward, RejectedReward } from "./schemas";
+import {
+  CreateConfirmedRewardDto,
+  CreatePendingRewardDTO,
+  CreateRejectedRewardDto,
+  MyRewardsResultDto,
+} from "./dto";
 import { CampaignStatus } from "src/campaigns/enum";
 import { CollectionNames } from "src/common/constants";
 import { CampaignService } from "src/campaigns/campaign.service";
@@ -12,7 +21,11 @@ import { resultHandler } from "src/common/helpers";
 
 @Injectable()
 export class PendingRewardService {
-  constructor(private pendingRewardRepository: PendingRewardRepository) {}
+  constructor(
+    private pendingRewardRepository: PendingRewardRepository,
+    private confirmedRewardRepository: ConfirmedRewardRepository,
+    private rejectedRewardRepository: RejectedRewardRepository
+  ) {}
 
   async createPendingRewards(
     input: CreatePendingRewardDTO
@@ -109,5 +122,50 @@ export class PendingRewardService {
     }
 
     return resultHandler(200, "pending rewards data", result);
+  }
+
+  async getPendingRewardsCount(filters): Promise<Result<number>> {
+    const count = await this.pendingRewardRepository.count(filters);
+
+    return resultHandler(200, "pending rewards count", count);
+  }
+
+  async getInListPendingRewardsCountForCampaign(
+    campaignId: string
+  ): Promise<Result<number>> {
+    const count = await this.pendingRewardRepository.count({
+      campaignId,
+      inList: true,
+    });
+
+    return resultHandler(200, "in list pending rewards count", count);
+  }
+  //--------------------------------------------------- confirmed  rewards
+
+  async createConfirmedRewards(
+    input: CreateConfirmedRewardDto
+  ): Promise<Result<ConfirmedReward>> {
+    const createdData = await this.confirmedRewardRepository.create({
+      ...input,
+    });
+    return resultHandler(200, "conf reward Created", createdData);
+  }
+
+  async getConfirmedRewardsCountForCampaign(
+    campaignId: string
+  ): Promise<Result<number>> {
+    const count = await this.confirmedRewardRepository.count({ campaignId });
+
+    return resultHandler(200, "confirmed rewards count", count);
+  }
+
+  //--------------------------------------------------- rejected  rewards
+  async createRejectedRewards(
+    input: CreateRejectedRewardDto
+  ): Promise<Result<RejectedReward>> {
+    const createdData = await this.rejectedRewardRepository.create({
+      ...input,
+    });
+    return resultHandler(200, "rejected reward Created", createdData);
   }
 }

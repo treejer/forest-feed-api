@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
-import { SendEmailJob } from "./queue.service";
-import { AppController } from "./queue.controller";
+import { QueueService } from "./queue.service";
+import { QueueController } from "./queue.controller";
 import { BullModule } from "@nestjs/bull";
 @Module({
   imports: [
@@ -24,8 +24,8 @@ import { BullModule } from "@nestjs/bull";
       },
     }),
   ],
-  controllers: [AppController],
-  providers: [SendEmailJob],
-  exports: [SendEmailJob],
+  controllers: [QueueController],
+  providers: [QueueService],
+  exports: [QueueService],
 })
 export class QueueModule {}
