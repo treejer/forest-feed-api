@@ -55,19 +55,23 @@ export class EventService {
       throw new ConflictException("");
     }
 
-    let from = "";
-    let to = "";
+    let from = "from";
+    let to = "to";
 
-    let pendingReward = await this.pendingRewardService.getPendingReward({
+    let pendingReward =
+      await this.pendingRewardService.getPendingReward({
       profileId,
       pubId,
       profileIdPointed,
       pubIdPointed,
-    });
+      });
+    console.log("1");
+    
 
-    if (pendingReward) {
+    if (pendingReward.data) {
       throw new ConflictException("");
     }
+    console.log("2",campaign.data);
 
     if (campaign.data.isFollowerOnly) {
       const followedData =
@@ -119,23 +123,24 @@ export class EventService {
     ) {
       inList = false;
     }
-    const fromProfileData = await this.lensApiService.getProfileOWner(
-      this.generateHexString(profileIdPointed).toLocaleLowerCase()
-    );
+    
+    // const fromProfileData = await this.lensApiService.getProfileOWner(
+    //   this.generateHexString(profileIdPointed).toLocaleLowerCase()
+    // );
 
-    if (fromProfileData.statusCode != 200) {
-      throw new ConflictException("");
-    }
-    from = fromProfileData.data;
-    if (!to) {
-      const toProfileData = await this.lensApiService.getProfileOWner(
-        this.generateHexString(profileId).toLocaleLowerCase()
-      );
-      if (toProfileData.statusCode != 200) {
-        throw new ConflictException("");
-      }
-      to = toProfileData.data;
-    }
+    // if (fromProfileData.statusCode != 200) {
+    //   throw new ConflictException("");
+    // }
+    // from = fromProfileData.data;
+    // if (!to) {
+    //   const toProfileData = await this.lensApiService.getProfileOWner(
+    //     this.generateHexString(profileId).toLocaleLowerCase()
+    //   );
+    //   if (toProfileData.statusCode != 200) {
+    //     throw new ConflictException("");
+    //   }
+    //   to = toProfileData.data;
+    // }
 
     const orderData = await this.pendingRewardService.getPendingRewardsCount({
       campaignId: campaign.data.id,
@@ -156,7 +161,11 @@ export class EventService {
         updatedAt: new Date(),
       });
 
-    await this.queueService.addRewardToQueue(createdPendingReward.data.id);
+    console.log("createdPendingReward", createdPendingReward.data
+    );
+    
+    // await this.queueService.addRewardToQueue(createdPendingReward.data.id,24*60*60*1000);
+    await this.queueService.addRewardToQueue(createdPendingReward.data._id ,10*1000);
   }
 
   private generateHexString(value) {

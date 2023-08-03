@@ -7,6 +7,11 @@ import { EventService } from "./event.service";
 import { LastStateRepository } from "./lastState.repository";
 import { Listener } from "./listener/listener.event";
 import { LastState, LastStateSchema } from "./schemas";
+import { CampaignModule } from "src/campaigns/campaign.module";
+import { PendingRewardModule } from "src/pendingReward/pendingReward.module";
+import { LensApiModule } from "src/lens-api/lens-api.module";
+import { QueueModule } from "src/queue/queue.module";
+import { EventController } from "./event.controller";
 
 @Module({
   imports: [
@@ -15,8 +20,12 @@ import { LastState, LastStateSchema } from "./schemas";
       { name: LastState.name, schema: LastStateSchema },
     ]),
     BugsnagModule,
+    CampaignModule,
+    PendingRewardModule,
+    LensApiModule,
+    QueueModule
   ],
-  controllers: [],
+  controllers: [EventController],
   providers: [Listener, EventService, LastStateRepository],
   exports: [],
 })

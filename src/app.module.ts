@@ -28,6 +28,7 @@ import { EventModule } from "./event/event.module";
     LensApiModule,
     CampaignModule,
     EventModule,
+    EventModule,
     // QueueModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({

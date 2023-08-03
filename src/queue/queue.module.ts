@@ -11,7 +11,7 @@ import { BullModule } from "@nestjs/bull";
       },
     }),
     BullModule.registerQueue({
-      name: "emails", // Queue name
+      name: "rewards", // Queue name
       defaultJobOptions: {
         attempts: 3,
         backoff: {

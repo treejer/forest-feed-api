@@ -9,8 +9,8 @@ import { IResult } from "src/database/interfaces/IResult.interface";
 @Processor("rewards") // Queue name
 export class QueueService {
   constructor(@InjectQueue("rewards") private readonly rewardsQueue: Queue) {}
-  async addRewardToQueue(pendingRewardId: string): Promise<IResult> {
-    await this.rewardsQueue.add("distribute", pendingRewardId); // 'send' is the job type
+  async addRewardToQueue(pendingRewardId: string,delay?:number): Promise<IResult> {
+    await this.rewardsQueue.add("distribute", pendingRewardId,{delay}); // 'send' is the job type
     return responseHandler(200, "added to queue");
   }
   @Process("distribute")
