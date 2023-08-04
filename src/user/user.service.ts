@@ -7,6 +7,7 @@ import { Result } from "src/database/interfaces/result.interface";
 import { CreateUserDto, GetUserMeDto, UserDto } from "./dtos";
 import { User } from "./schemas";
 import { UserRepository } from "./user.repository";
+import BigNumber from "bignumber.js";
 
 @Injectable()
 export class UserService {
@@ -20,14 +21,9 @@ export class UserService {
 
   async updateUserBalance(
     walletAddress: string,
-    amount: number,
+    amount: BigNumber,
     transactionHash: string
   ): Promise<IResult> {
-
-    console.log("walletAddress",walletAddress);
-    console.log("amount",amount);
-    console.log("transactionHash",transactionHash);
-
 
     const user = await this.userRepository.findOne(
       { walletAddress },
@@ -37,9 +33,6 @@ export class UserService {
         totalBalance:1,
       }
     );
-
-
-    console.log("user",user);
 
     if (!user) {
       throw new NotFoundException(UserApiErrorMessage.USER_NOT_FOUND);
@@ -58,7 +51,7 @@ export class UserService {
     await this.userRepository.updateOne(
       { walletAddress },
       {
-        $inc: { totalBalance: amount },
+        $set: { totalBalance: amount.plus(user.totalBalance) },
         $push: { transactions: transactionHash },
       }
     );

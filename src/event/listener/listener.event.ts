@@ -14,6 +14,7 @@ import {
 import { Web3Service } from "src/web3/web3.service";
 import { EventService } from "../event.service";
 import { UserService } from "src/user/user.service";
+import BigNumber from "bignumber.js";
 
 const EthereumEvents = require("ethereum-events");
 
@@ -22,7 +23,7 @@ export const ListenerConfig = {
   CONFIRMATIONS: 12,
   CHUNK_SIZE: 10000,
   CONCURRENCY: 1,
-  BACK_OFF: 30000,
+  BACK_OFF: 300000,
 };
 
 export const ListenerType = {
@@ -190,9 +191,9 @@ export class Listener {
           for (let event of events) {
             if (event.name === ForestFeedEventName.DEPOSITED) {
               try {
-                await this.userService.updateUserBalance(event.values.creator,Number(event.values.amount),event.transactionHash);
+                await this.userService.updateUserBalance(event.values.creator,BigNumber(event.values.amount),event.transactionHash);
               } catch (error) {
-                if(error && error.response && error.response.statusCode == 409){
+                if(error && error.response && (error.response.statusCode == 409 || error.response.statusCode == 404)){
                   console.log("error.response",error.response)
                   console.log("DEPOSITED error", error);
                 }else{
