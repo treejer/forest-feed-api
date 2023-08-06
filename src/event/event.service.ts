@@ -9,6 +9,8 @@ import { CampaignService } from "src/campaigns/campaign.service";
 import { LensApiService } from "src/lens-api/lens-api.service";
 import { PendingRewardService } from "src/pendingReward/pendingReward.service";
 import { QueueService } from "src/queue/queue.service";
+import { ConfirmedReward } from "src/pendingReward/schemas";
+import { RewardStatus } from "src/common/constants";
 
 @Injectable()
 export class EventService {
@@ -48,30 +50,39 @@ export class EventService {
       this.generateHexString(pubIdPointed);
 
     const campaign =
-      await this.campaignService.getActiveCampaingByPublicationId(
+      await this.campaignService.getActiveCampaignByPublicationId(
         publicationId
       );
     if (!campaign) {
       throw new ConflictException("");
     }
 
-    let from = "from";
-    let to = "to";
+    const fromProfileData = await this.lensApiService.getProfileOWner(
+      this.generateHexString(profileIdPointed).toLocaleLowerCase()
+    );
 
-    let pendingReward =
-      await this.pendingRewardService.getPendingReward({
-      profileId,
-      pubId,
-      profileIdPointed,
-      pubIdPointed,
-      });
-    console.log("1");
-    
-
-    if (pendingReward.data) {
+    if (fromProfileData.statusCode != 200) {
       throw new ConflictException("");
     }
-    console.log("2",campaign.data);
+    let from = fromProfileData.data;
+
+    const toProfileData = await this.lensApiService.getProfileOWner(
+      this.generateHexString(profileId).toLocaleLowerCase()
+    );
+    if (toProfileData.statusCode != 200) {
+      throw new ConflictException("");
+    }
+    let to = toProfileData.data;
+
+    let reward = await this.pendingRewardService.getPendingReward({
+      campaignId: campaign.data._id,
+      to: to.toLowerCase(),
+      status: { $in: [RewardStatus.CONFIRMED, RewardStatus.PENDING] },
+    });
+
+    if (reward.data) {
+      throw new ConflictException("");
+    }
 
     if (campaign.data.isFollowerOnly) {
       const followedData =
@@ -87,8 +98,6 @@ export class EventService {
       if (!followedData.data.isFollowing) {
         throw new ConflictException("");
       }
-
-      to = followedData.data.ownedBy;
     }
     if (campaign.data.minFollower > 0) {
       const followerCountData = await this.lensApiService.getFollowersCount(
@@ -100,17 +109,15 @@ export class EventService {
       if (followerCountData.data.totalFollowers < campaign.data.minFollower) {
         throw new ConflictException("");
       }
-      if (!to) {
-        to = followerCountData.data.ownedBy;
-      }
     }
 
     let inList = true;
 
-    const inListCount =
+    const pendingCount =
       await this.pendingRewardService.getInListPendingRewardsCountForCampaign(
         campaign.data.id
       );
+
     const confirmedRewardCount =
       await this.pendingRewardService.getConfirmedRewardsCountForCampaign(
         campaign.data.id
@@ -118,29 +125,11 @@ export class EventService {
 
     //check if this pendingReward is in the reward list
     if (
-      inListCount.data + confirmedRewardCount.data >=
+      pendingCount.data + confirmedRewardCount.data >=
       campaign.data.campaignSize
     ) {
       inList = false;
     }
-    
-    // const fromProfileData = await this.lensApiService.getProfileOWner(
-    //   this.generateHexString(profileIdPointed).toLocaleLowerCase()
-    // );
-
-    // if (fromProfileData.statusCode != 200) {
-    //   throw new ConflictException("");
-    // }
-    // from = fromProfileData.data;
-    // if (!to) {
-    //   const toProfileData = await this.lensApiService.getProfileOWner(
-    //     this.generateHexString(profileId).toLocaleLowerCase()
-    //   );
-    //   if (toProfileData.statusCode != 200) {
-    //     throw new ConflictException("");
-    //   }
-    //   to = toProfileData.data;
-    // }
 
     const orderData = await this.pendingRewardService.getPendingRewardsCount({
       campaignId: campaign.data.id,
@@ -153,19 +142,14 @@ export class EventService {
         from: from,
         to: to,
         inList,
-        profileId,
-        pubId,
-        profileIdPointed,
-        pubIdPointed,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        status: RewardStatus.PENDING,
       });
 
-    console.log("createdPendingReward", createdPendingReward.data
-    );
-    
     // await this.queueService.addRewardToQueue(createdPendingReward.data.id,24*60*60*1000);
-    await this.queueService.addRewardToQueue(createdPendingReward.data._id ,10*1000);
+    await this.queueService.addRewardToQueue(
+      createdPendingReward.data._id,
+      10 * 1000
+    );
   }
 
   private generateHexString(value) {

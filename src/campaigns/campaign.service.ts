@@ -274,7 +274,7 @@ export class CampaignService {
       pendingRewards: pendingRewards.data,
     });
   }
-  async getActiveCampaingByPublicationId(
+  async getActiveCampaignByPublicationId(
     publicationId: string
   ): Promise<Result<Campaign>> {
     const campaign = this.campaignRepository.findOne({

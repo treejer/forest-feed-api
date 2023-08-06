@@ -48,7 +48,6 @@ export class LensApiService {
       ) {
         return resultHandler(200, "get followers count", {
           totalFollowers: res.data.data.profile.stats.totalFollowers,
-          ownedBy: res.data.data.profile.ownedBy,
         });
       } else {
         throw new InternalServerErrorException(
@@ -86,7 +85,6 @@ export class LensApiService {
       if (res.data.data && res.data.data.profile) {
         return resultHandler(200, "get profile a followed by profile b", {
           isFollowing: res.data.data.profile.isFollowing,
-          ownedBy: res.data.data.profile.ownedBy,
         });
       } else {
         throw new InternalServerErrorException(

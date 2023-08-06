@@ -13,7 +13,7 @@ import {
   MyRewardsResultDto,
 } from "./dto";
 import { CampaignStatus } from "src/campaigns/enum";
-import { CollectionNames } from "src/common/constants";
+import { CollectionNames, RewardStatus } from "src/common/constants";
 import { CampaignService } from "src/campaigns/campaign.service";
 import { JwtUserDto } from "src/auth/dtos";
 import { Result } from "src/database/interfaces/result.interface";
@@ -136,6 +136,7 @@ export class PendingRewardService {
     const count = await this.pendingRewardRepository.count({
       campaignId,
       inList: true,
+      status: RewardStatus.PENDING,
     });
 
     return resultHandler(200, "in list pending rewards count", count);
@@ -150,11 +151,21 @@ export class PendingRewardService {
     });
     return resultHandler(200, "conf reward Created", createdData);
   }
+  async getConfirmedReward(filters): Promise<Result<ConfirmedReward>> {
+    const result = await this.confirmedRewardRepository.findOne(filters);
+    if (!result) {
+      return resultHandler(404, "no confirmed rewards", undefined);
+    }
 
+    return resultHandler(200, "confirmed rewards data", result);
+  }
   async getConfirmedRewardsCountForCampaign(
     campaignId: string
   ): Promise<Result<number>> {
-    const count = await this.confirmedRewardRepository.count({ campaignId });
+    const count = await this.pendingRewardRepository.count({
+      campaignId,
+      status: RewardStatus.CONFIRMED,
+    });
 
     return resultHandler(200, "confirmed rewards count", count);
   }
