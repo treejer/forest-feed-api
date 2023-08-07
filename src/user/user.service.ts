@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { UserApiErrorMessage } from "src/common/constants";
 import { resultHandler } from "src/common/helpers";
 import { responseHandler } from "src/common/helpers/response-handler";
@@ -8,10 +8,15 @@ import { CreateUserDto, GetUserMeDto, UserDto } from "./dtos";
 import { User } from "./schemas";
 import { UserRepository } from "./user.repository";
 import BigNumber from "bignumber.js";
+import { Connection } from "mongoose";
+import { InjectConnection } from "@nestjs/mongoose";
+import { BalanceTransactionRepository } from "./balanceTransaction.repository";
 
 @Injectable()
 export class UserService {
-  constructor(private userRepository: UserRepository) {}
+  constructor(private userRepository: UserRepository, 
+  private balanceTransactionRepository: BalanceTransactionRepository,
+  @InjectConnection() private connection: Connection) {}
 
   async create(user: CreateUserDto): Promise<Result<User>> {
     const data = await this.userRepository.create({ ...user });
@@ -38,7 +43,7 @@ export class UserService {
       throw new NotFoundException(UserApiErrorMessage.USER_NOT_FOUND);
     }
 
-    let findTx = user.transactions.find(item => item == transactionHash)
+    let findTx = await this.balanceTransactionRepository.findOne({ transactionHash })
 
     console.log("findTx",findTx);
 
@@ -47,16 +52,39 @@ export class UserService {
         UserApiErrorMessage.TRANSACTION_DUPLICATED
       );    
     }
+    
+    const session = await this.connection.startSession();
 
-    await this.userRepository.updateOne(
-      { walletAddress },
-      {
-        $set: { totalBalance: amount.plus(user.totalBalance) },
-        $push: { transactions: transactionHash },
-      }
-    );
+    await session.startTransaction();
 
-    return responseHandler(200, "user balance updated");
+    try {
+      await this.balanceTransactionRepository.create({ transactionHash, userId:user._id },session);
+
+      await this.userRepository.updateOne(
+        { walletAddress },
+        {
+          $set: { totalBalance: amount.plus(user.totalBalance) },
+          $push: { transactions: transactionHash },
+        },
+        [],
+        session
+      );
+
+      await session.commitTransaction();
+      
+      session.endSession();
+
+      return responseHandler(200, "user balance updated");
+
+    }catch(e){
+      
+      await session.abortTransaction();
+      
+      session.endSession();
+      
+      throw new InternalServerErrorException(e);
+    }
+
   }
 
   async findUser(
