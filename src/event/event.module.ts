@@ -12,10 +12,12 @@ import { PendingRewardModule } from "src/pendingReward/pendingReward.module";
 import { LensApiModule } from "src/lens-api/lens-api.module";
 import { QueueModule } from "src/queue/queue.module";
 import { EventController } from "./event.controller";
+import { UserModule } from "src/user/user.module";
 
 @Module({
   imports: [
     Web3Module,
+    UserModule,
     MongooseModule.forFeature([
       { name: LastState.name, schema: LastStateSchema },
     ]),
@@ -23,7 +25,7 @@ import { EventController } from "./event.controller";
     CampaignModule,
     PendingRewardModule,
     LensApiModule,
-    QueueModule
+    QueueModule,
   ],
   controllers: [EventController],
   providers: [Listener, EventService, LastStateRepository],
