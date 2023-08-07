@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { Role, UserStatus } from "src/common/constants";
+import { Role } from "src/common/constants";
+import BigNumber from 'bignumber.js';
 
 export type UserDocument = User & Document;
 
@@ -12,7 +13,7 @@ export class User extends Document {
   @Prop({ type: Number, required: true })
   nonce;
 
-  @Prop({ type: Number, default: 0, required: true })
+  @Prop({ type: BigNumber, default: 0, required: true })
   totalBalance;
 
   @Prop({ type: Number, default: Role.USER, required: true })

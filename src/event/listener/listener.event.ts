@@ -13,15 +13,17 @@ import {
 } from "src/common/constants";
 import { Web3Service } from "src/web3/web3.service";
 import { EventService } from "../event.service";
+import { UserService } from "src/user/user.service";
+import BigNumber from "bignumber.js";
 
 const EthereumEvents = require("ethereum-events");
 
 export const ListenerConfig = {
   POLL_INTERVAL: 13000,
   CONFIRMATIONS: 12,
-  CHUNK_SIZE: 1,
-  CONCURRENCY: 10,
-  BACK_OFF: 1000,
+  CHUNK_SIZE: 10000,
+  CONCURRENCY: 1,
+  BACK_OFF: 300000,
 };
 
 export const ListenerType = {
@@ -35,7 +37,8 @@ export class Listener {
     private web3Service: Web3Service,
     private configService: ConfigService,
     private eventService: EventService,
-    private bugSnag: BugsnagService
+    private bugSnag: BugsnagService,
+    private userService:UserService
   ) {}
 
   @Command({
@@ -179,7 +182,7 @@ export class Listener {
     let lastErrorTime = new Date();
 
     ethereumEvents.on("block.confirmed", async (blockNumber, events, done) => {
-      console.log("block.confirmed", blockNumber);
+      console.log("block.confirmed", blockNumber,events);
 
       lastErrorTime = new Date();
 
@@ -188,10 +191,15 @@ export class Listener {
           for (let event of events) {
             if (event.name === ForestFeedEventName.DEPOSITED) {
               try {
-                //---> forest feed service
+                await this.userService.updateUserBalance(event.values.creator,BigNumber(event.values.amount),event.transactionHash);
               } catch (error) {
-                reject("error");
-                console.log("DEPOSITED error", error);
+                if(error && error.response && (error.response.statusCode == 409 || error.response.statusCode == 404)){
+                  console.log("error.response",error.response)
+                  console.log("DEPOSITED error", error);
+                }else{
+                  console.log("error.response",error.response)
+                  reject("error");
+                }
               }
             }
           }

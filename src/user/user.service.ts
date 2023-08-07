@@ -1,16 +1,22 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { CreateUserDto, UserDto, GetUserMeDto } from "./dtos";
-import { User } from "./schemas";
-import { UserRepository } from "./user.repository";
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { UserApiErrorMessage } from "src/common/constants";
+import { resultHandler } from "src/common/helpers";
 import { responseHandler } from "src/common/helpers/response-handler";
 import { IResult } from "src/database/interfaces/IResult.interface";
 import { Result } from "src/database/interfaces/result.interface";
-import { resultHandler } from "src/common/helpers";
+import { CreateUserDto, GetUserMeDto, UserDto } from "./dtos";
+import { User } from "./schemas";
+import { UserRepository } from "./user.repository";
+import BigNumber from "bignumber.js";
+import { Connection } from "mongoose";
+import { InjectConnection } from "@nestjs/mongoose";
+import { BalanceTransactionRepository } from "./balanceTransaction.repository";
 
 @Injectable()
 export class UserService {
-  constructor(private userRepository: UserRepository) {}
+  constructor(private userRepository: UserRepository, 
+  private balanceTransactionRepository: BalanceTransactionRepository,
+  @InjectConnection() private connection: Connection) {}
 
   async create(user: CreateUserDto): Promise<Result<User>> {
     const data = await this.userRepository.create({ ...user });
@@ -20,19 +26,65 @@ export class UserService {
 
   async updateUserBalance(
     walletAddress: string,
-    amount: number
+    amount: BigNumber,
+    transactionHash: string
   ): Promise<IResult> {
-    const user = await this.userRepository.findOne({ walletAddress });
+
+    const user = await this.userRepository.findOne(
+      { walletAddress },
+      {
+        _id: 1,
+        transactions: 1,
+        totalBalance:1,
+      }
+    );
+
     if (!user) {
       throw new NotFoundException(UserApiErrorMessage.USER_NOT_FOUND);
     }
 
-    await this.userRepository.updateOne(
-      { walletAddress },
-      { $set: { totalBalance: user.totalBalance + amount } }
-    );
+    let findTx = await this.balanceTransactionRepository.findOne({ transactionHash })
 
-    return responseHandler(200, "user balance updated");
+    console.log("findTx",findTx);
+
+    if(findTx){
+      throw new ConflictException(
+        UserApiErrorMessage.TRANSACTION_DUPLICATED
+      );    
+    }
+    
+    const session = await this.connection.startSession();
+
+    await session.startTransaction();
+
+    try {
+      await this.balanceTransactionRepository.create({ transactionHash, userId:user._id },session);
+
+      await this.userRepository.updateOne(
+        { walletAddress },
+        {
+          $set: { totalBalance: amount.plus(user.totalBalance) },
+          $push: { transactions: transactionHash },
+        },
+        [],
+        session
+      );
+
+      await session.commitTransaction();
+      
+      session.endSession();
+
+      return responseHandler(200, "user balance updated");
+
+    }catch(e){
+      
+      await session.abortTransaction();
+      
+      session.endSession();
+      
+      throw new InternalServerErrorException(e);
+    }
+
   }
 
   async findUser(
