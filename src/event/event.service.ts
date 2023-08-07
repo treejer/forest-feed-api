@@ -1,6 +1,8 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
 import { LastStateRepository } from "./lastState.repository";
@@ -10,7 +12,7 @@ import { LensApiService } from "src/lens-api/lens-api.service";
 import { PendingRewardService } from "src/pendingReward/pendingReward.service";
 import { QueueService } from "src/queue/queue.service";
 import { ConfirmedReward } from "src/pendingReward/schemas";
-import { RewardStatus } from "src/common/constants";
+import { EventHandlerErrors, RewardStatus } from "src/common/constants";
 
 @Injectable()
 export class EventService {
@@ -43,7 +45,7 @@ export class EventService {
     return result ? result.lastBlockNumber + 1 : 1;
   }
 
-  async handleMirror(pubId, profileId, pubIdPointed, profileIdPointed) {
+  async handleMirror(profileId, pubIdPointed, profileIdPointed) {
     const publicationId =
       this.generateHexString(profileIdPointed) +
       "-" +
@@ -53,8 +55,9 @@ export class EventService {
       await this.campaignService.getActiveCampaignByPublicationId(
         publicationId
       );
+
     if (!campaign) {
-      throw new ConflictException("");
+      throw new NotFoundException(EventHandlerErrors.CAMPAIGN_NOT_FOUND);
     }
 
     const fromProfileData = await this.lensApiService.getProfileOWner(
@@ -62,26 +65,27 @@ export class EventService {
     );
 
     if (fromProfileData.statusCode != 200) {
-      throw new ConflictException("");
+      throw new InternalServerErrorException(EventHandlerErrors.CANT_GET_FROM);
     }
     let from = fromProfileData.data;
 
     const toProfileData = await this.lensApiService.getProfileOWner(
       this.generateHexString(profileId).toLocaleLowerCase()
     );
+
     if (toProfileData.statusCode != 200) {
-      throw new ConflictException("");
+      throw new InternalServerErrorException(EventHandlerErrors.CANT_GET_TO);
     }
     let to = toProfileData.data;
 
     let reward = await this.pendingRewardService.getPendingReward({
       campaignId: campaign.data._id,
-      to: to.toLowerCase(),
+      to,
       status: { $in: [RewardStatus.CONFIRMED, RewardStatus.PENDING] },
     });
 
     if (reward.data) {
-      throw new ConflictException("");
+      throw new ConflictException(EventHandlerErrors.ALREADY_MIRRORED);
     }
 
     if (campaign.data.isFollowerOnly) {
@@ -92,22 +96,30 @@ export class EventService {
         );
 
       if (followedData.statusCode != 200) {
-        throw new ConflictException("");
+        throw new InternalServerErrorException(
+          EventHandlerErrors.CANT_GET_FOLLOWED_DATA
+        );
       }
 
       if (!followedData.data.isFollowing) {
-        throw new ConflictException("");
+        throw new ForbiddenException(
+          EventHandlerErrors.NOT_FOLLOWING_POST_OWNER
+        );
       }
     }
+
     if (campaign.data.minFollower > 0) {
       const followerCountData = await this.lensApiService.getFollowersCount(
         this.generateHexString(profileId)
       );
+
       if (followerCountData.statusCode != 200) {
-        throw new ConflictException("");
+        throw new InternalServerErrorException(EventHandlerErrors.IS_FOLLOWING);
       }
       if (followerCountData.data.totalFollowers < campaign.data.minFollower) {
-        throw new ConflictException("");
+        throw new ForbiddenException(
+          EventHandlerErrors.MIN_FOLLOWER_NOT_SATISFIED
+        );
       }
     }
 
@@ -145,10 +157,9 @@ export class EventService {
         status: RewardStatus.PENDING,
       });
 
-    // await this.queueService.addRewardToQueue(createdPendingReward.data.id,24*60*60*1000);
     await this.queueService.addRewardToQueue(
       createdPendingReward.data._id,
-      10 * 1000
+      24 * 60 * 60 * 1000
     );
   }
 

@@ -277,7 +277,7 @@ export class CampaignService {
   async getActiveCampaignByPublicationId(
     publicationId: string
   ): Promise<Result<Campaign>> {
-    const campaign = this.campaignRepository.findOne({
+    const campaign = await this.campaignRepository.findOne({
       publicationId,
       status: CampaignStatus.ACTIVE,
     });

@@ -6,6 +6,7 @@ import { LensApiErrorMessage } from "src/common/constants";
 import {
   getFollowersCountQuery,
   getIsFollowedByProfileQuery,
+  getProfileOwnerQuery,
   getPublicationOwnerQuery,
 } from "src/common/graphQuery";
 import { resultHandler } from "src/common/helpers";
@@ -36,6 +37,7 @@ export class LensApiService {
       };
 
       const res = await axios.post(this.lensUrl, postBody, {
+        timeout: 4000,
         headers: {
           contentType: "application/json",
         },
@@ -77,6 +79,7 @@ export class LensApiService {
       };
 
       const res = await axios.post(this.lensUrl, postBody, {
+        timeout: 4000,
         headers: {
           contentType: "application/json",
         },
@@ -103,6 +106,7 @@ export class LensApiService {
         LensApiErrorMessage.LENS_URL_NOT_SET
       );
     }
+    console.log("pppp", publication_id);
 
     try {
       const postBody = {
@@ -112,6 +116,7 @@ export class LensApiService {
       };
 
       const res = await axios.post(this.lensUrl, postBody, {
+        timeout: 4000,
         headers: {
           contentType: "application/json",
         },
@@ -148,11 +153,12 @@ export class LensApiService {
     try {
       const postBody = {
         operationName: "Profile",
-        query: this.getProfileOWner(profile),
+        query: getProfileOwnerQuery(profile),
         variables: {},
       };
 
       const res = await axios.post(this.lensUrl, postBody, {
+        timeout: 4000,
         headers: {
           contentType: "application/json",
         },
@@ -162,7 +168,7 @@ export class LensApiService {
         return resultHandler(
           200,
           "get profile owner",
-          res.data.data.profile.ownedBy
+          res.data.data.profile.ownedBy.toLowerCase()
         );
       } else {
         throw new InternalServerErrorException(

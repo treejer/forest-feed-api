@@ -27,7 +27,7 @@ import { EventModule } from "./event/event.module";
     PendingRewardModule,
     LensApiModule,
     CampaignModule,
-    // EventModule,
+    EventModule,
     // QueueModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
