@@ -9,14 +9,60 @@ import { IResult } from "src/database/interfaces/IResult.interface";
 @Processor("rewards") // Queue name
 export class QueueService {
   constructor(@InjectQueue("rewards") private readonly rewardsQueue: Queue) {}
-  async addRewardToQueue(pendingRewardId: string,delay?:number): Promise<IResult> {
-    await this.rewardsQueue.add("distribute", pendingRewardId,{delay}); // 'send' is the job type
+
+  async emptyQueue(): Promise<IResult> {
+    try {
+      await this.rewardsQueue.removeJobs("");
+    } catch (error) {
+      console.log("errrrrr", error);
+    }
+
+    return responseHandler(200, "added to queue");
+  }
+  async addRewardToQueue(
+    pendingRewardId: string,
+    delay?: number
+  ): Promise<IResult> {
+    try {
+      await this.rewardsQueue.add("distribute", pendingRewardId, { delay: 0 });
+      // await this.rewardsQueue.empty();
+      // .then((res) => {
+      //   // console.log("err", err);
+      //   console.log("res", res);
+      // });
+    } catch (error) {
+      console.log("errrrrr", error);
+    }
+
     return responseHandler(200, "added to queue");
   }
   @Process("distribute")
   async distributeReward(job: Job<any>) {
+    await this.sleep(700);
+
+    let failed = true;
+    let retryCount = 0;
+
     const data = job.data;
-    console.log("job", data);
+    while (failed && retryCount < 2) {
+      try {
+        console.log("job", data);
+
+        if (data == "2") {
+          throw new InternalServerErrorException("");
+        }
+        failed = false;
+      } catch (error) {
+        retryCount++;
+        if (retryCount == 2) {
+          console.log("aaaa");
+
+          await job.retry();
+        } else {
+          await this.sleep(200);
+        }
+      }
+    }
 
     // try {
     //   console.log(`Sending email to: ${data.email}`);
@@ -44,5 +90,9 @@ export class QueueService {
     //   }
     // }
     // Your email sending logic here
+  }
+
+  async sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

@@ -28,7 +28,7 @@ import { EventModule } from "./event/event.module";
     LensApiModule,
     CampaignModule,
     EventModule,
-    // QueueModule,
+    QueueModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "views"),
