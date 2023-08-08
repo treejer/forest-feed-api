@@ -5,21 +5,22 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 
-import { CampaignRepository } from "./campaign.repository";
-import { Campaign } from "./schemas";
-import { CreateCampaignDto } from "./dto";
-import { CampaignStatus } from "./enum";
-import { CampaignErrorMessage } from "src/common/constants";
+import BigNumber from "bignumber.js";
+import { JwtUserDto } from "src/auth/dtos";
+import { CONFIG, CampaignErrorMessage } from "src/common/constants";
+import { responseHandler, resultHandler } from "src/common/helpers";
+import { IResult } from "src/database/interfaces/IResult.interface";
+import { Result } from "src/database/interfaces/result.interface";
 import { LensApiService } from "src/lens-api/lens-api.service";
-import { UserService } from "src/user/user.service";
 import { PendingRewardService } from "src/pendingReward/pendingReward.service";
 import { PendingWithdrawService } from "src/pendingWithdraws/pendingWithdraws.service";
-import { JwtUserDto } from "src/auth/dtos";
+import { UserService } from "src/user/user.service";
+import { CampaignRepository } from "./campaign.repository";
+import { CreateCampaignDto } from "./dto";
 import { CampaignDetailResultDto } from "./dto/campaign-detail-result.dto";
-import { IResult } from "src/database/interfaces/IResult.interface";
-import { responseHandler, resultHandler } from "src/common/helpers";
-import { Result } from "src/database/interfaces/result.interface";
 import { MyCampaignResultDto } from "./dto/my-campaign-result.dto";
+import { CampaignStatus } from "./enum";
+import { Campaign } from "./schemas";
 
 @Injectable()
 export class CampaignService {
@@ -77,7 +78,12 @@ export class CampaignService {
     );
 
     const finalCapacity =
-      totalBalance -
+      Number(
+        BigNumber(BigNumber(totalBalance).div(CONFIG.TREE_PRICE)).decimalPlaces(
+          0,
+          1
+        )
+      ) -
       (activeCampaignsCapacity +
         notDistributedPendingRewardsForDeactiveCampaigns +
         totalPendingWithdraw);
@@ -165,7 +171,12 @@ export class CampaignService {
     );
 
     const finalCapacity =
-      totalBalance -
+      Number(
+        BigNumber(BigNumber(totalBalance).div(CONFIG.TREE_PRICE)).decimalPlaces(
+          0,
+          1
+        )
+      ) -
       (activeCampaignsCapacity +
         notDistributedPendingRewardsForDeactiveCampaigns +
         totalPendingWithdraw);

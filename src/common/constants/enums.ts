@@ -17,21 +17,19 @@ export enum UserStatus {
   VERIFIED = 3,
 }
 
-
 export enum LensEventName {
-  Mirror_CREATED = "MirrorCreated"
+  Mirror_CREATED = "MirrorCreated",
 }
 
 export enum ForestFeedEventName {
   DEPOSITED = "Deposited",
 }
 
-
-
 export enum LastStateIds {
-  BALANCE="42414c414e43450000000000",
-  MIRROR="4d4952524f52000000000000"
+  BALANCE = "42414c414e43450000000000",
+  MIRROR = "4d4952524f52000000000000",
 }
 
-
-
+export const CONFIG = {
+  TREE_PRICE: "10000000000000000000",
+};
