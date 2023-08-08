@@ -1,11 +1,8 @@
 import { Injectable } from "@nestjs/common";
-
 import { PendingRewardRepository } from "./pendingReward.repository";
 import { PendingReward } from "./schemas";
 import { CreatePendingRewardDTO, MyRewardsResultDto } from "./dto";
-import { CampaignStatus } from "src/campaigns/enum";
-import { CollectionNames } from "src/common/constants";
-import { CampaignService } from "src/campaigns/campaign.service";
+import { RewardStatus } from "src/common/constants";
 import { JwtUserDto } from "src/auth/dtos";
 import { Result } from "src/database/interfaces/result.interface";
 import { resultHandler } from "src/common/helpers";
@@ -101,5 +98,42 @@ export class PendingRewardService {
       "not distributed pending rewards count for campaign",
       result
     );
+  }
+  async getPendingReward(filters): Promise<Result<PendingReward>> {
+    const result = await this.pendingRewardRepository.findOne(filters);
+    if (!result) {
+      return resultHandler(404, "no pending rewards", undefined);
+    }
+
+    return resultHandler(200, "pending rewards data", result);
+  }
+
+  async getPendingRewardsCount(filters): Promise<Result<number>> {
+    const count = await this.pendingRewardRepository.count(filters);
+
+    return resultHandler(200, "pending rewards count", count);
+  }
+
+  async getInListPendingRewardsCountForCampaign(
+    campaignId: string
+  ): Promise<Result<number>> {
+    const count = await this.pendingRewardRepository.count({
+      campaignId,
+      inList: true,
+      status: RewardStatus.PENDING,
+    });
+
+    return resultHandler(200, "in list pending rewards count", count);
+  }
+
+  async getConfirmedRewardsCountForCampaign(
+    campaignId: string
+  ): Promise<Result<number>> {
+    const count = await this.pendingRewardRepository.count({
+      campaignId,
+      status: RewardStatus.CONFIRMED,
+    });
+
+    return resultHandler(200, "confirmed rewards count", count);
   }
 }

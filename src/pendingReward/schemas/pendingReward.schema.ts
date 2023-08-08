@@ -20,6 +20,15 @@ export class PendingReward extends Document {
   @Prop({ type: Boolean, default: false, required: true })
   isDistributed;
 
+  @Prop({ type: Boolean, required: true })
+  inList;
+
+  @Prop({ type: Number, required: true })
+  order;
+
+  @Prop({ type: Number, required: true })
+  status;
+
   @Prop({ type: Date, default: new Date(), required: true })
   createdAt;
 
