@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { ForbiddenException, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import axios from "axios";
 import { LensApiErrorMessage } from "src/common/constants";
@@ -24,9 +24,7 @@ export class LensApiService {
     profileId: string
   ): Promise<Result<FollowersCountResultDto>> {
     if (!this.lensUrl) {
-      throw new InternalServerErrorException(
-        LensApiErrorMessage.LENS_URL_NOT_SET
-      );
+      throw new ForbiddenException(LensApiErrorMessage.LENS_URL_NOT_SET);
     }
 
     try {
@@ -52,12 +50,12 @@ export class LensApiService {
           totalFollowers: res.data.data.profile.stats.totalFollowers,
         });
       } else {
-        throw new InternalServerErrorException(
-          LensApiErrorMessage.ERROR_IN_GETTING_RESPONSE
-        );
+        return resultHandler(404, "not found", {
+          totalFollowers: "",
+        });
       }
     } catch (error) {
-      throw new InternalServerErrorException("Graph failed !!");
+      throw new ForbiddenException("Graph failed !!");
     }
   }
 
@@ -66,9 +64,7 @@ export class LensApiService {
     profile_b: string
   ): Promise<Result<FollowingDataResultDto>> {
     if (!this.lensUrl) {
-      throw new InternalServerErrorException(
-        LensApiErrorMessage.LENS_URL_NOT_SET
-      );
+      throw new ForbiddenException(LensApiErrorMessage.LENS_URL_NOT_SET);
     }
 
     try {
@@ -90,23 +86,20 @@ export class LensApiService {
           isFollowing: res.data.data.profile.isFollowing,
         });
       } else {
-        throw new InternalServerErrorException(
-          LensApiErrorMessage.ERROR_IN_GETTING_RESPONSE
-        );
+        return resultHandler(404, "not found", {
+          isFollowing: "",
+        });
       }
     } catch (error) {
       console.log("error", error);
-      throw new InternalServerErrorException("Graph failed !!");
+      throw new ForbiddenException("Graph failed !!");
     }
   }
 
   async getPublicationOwner(publication_id: string): Promise<Result<string>> {
     if (!this.lensUrl) {
-      throw new InternalServerErrorException(
-        LensApiErrorMessage.LENS_URL_NOT_SET
-      );
+      throw new ForbiddenException(LensApiErrorMessage.LENS_URL_NOT_SET);
     }
-    console.log("pppp", publication_id);
 
     try {
       const postBody = {
@@ -133,21 +126,17 @@ export class LensApiService {
           res.data.data.publication.profile.ownedBy.toLowerCase()
         );
       } else {
-        throw new InternalServerErrorException(
-          LensApiErrorMessage.ERROR_IN_GETTING_RESPONSE
-        );
+        return resultHandler(404, "not found", "");
       }
     } catch (error) {
       console.log("error", error);
-      throw new InternalServerErrorException("Graph failed !!");
+      throw new ForbiddenException("Graph failed !!");
     }
   }
 
   async getProfileOWner(profile: string): Promise<Result<string>> {
     if (!this.lensUrl) {
-      throw new InternalServerErrorException(
-        LensApiErrorMessage.LENS_URL_NOT_SET
-      );
+      throw new ForbiddenException(LensApiErrorMessage.LENS_URL_NOT_SET);
     }
 
     try {
@@ -171,13 +160,11 @@ export class LensApiService {
           res.data.data.profile.ownedBy.toLowerCase()
         );
       } else {
-        throw new InternalServerErrorException(
-          LensApiErrorMessage.ERROR_IN_GETTING_RESPONSE
-        );
+        return resultHandler(404, "not found", "");
       }
     } catch (error) {
       console.log("error", error);
-      throw new InternalServerErrorException("Graph failed !!");
+      throw new ForbiddenException("Graph failed !!");
     }
   }
 }

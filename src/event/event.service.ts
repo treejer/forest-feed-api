@@ -11,7 +11,6 @@ import { CampaignService } from "src/campaigns/campaign.service";
 import { LensApiService } from "src/lens-api/lens-api.service";
 import { PendingRewardService } from "src/pendingReward/pendingReward.service";
 import { QueueService } from "src/queue/queue.service";
-import { ConfirmedReward } from "src/pendingReward/schemas";
 import { EventHandlerErrors, RewardStatus } from "src/common/constants";
 
 @Injectable()
@@ -65,7 +64,7 @@ export class EventService {
     );
 
     if (fromProfileData.statusCode != 200) {
-      throw new InternalServerErrorException(EventHandlerErrors.CANT_GET_FROM);
+      throw new NotFoundException(EventHandlerErrors.CANT_GET_FROM);
     }
     let from = fromProfileData.data;
 
@@ -74,7 +73,7 @@ export class EventService {
     );
 
     if (toProfileData.statusCode != 200) {
-      throw new InternalServerErrorException(EventHandlerErrors.CANT_GET_TO);
+      throw new NotFoundException(EventHandlerErrors.CANT_GET_TO);
     }
     let to = toProfileData.data;
 
@@ -96,9 +95,7 @@ export class EventService {
         );
 
       if (followedData.statusCode != 200) {
-        throw new InternalServerErrorException(
-          EventHandlerErrors.CANT_GET_FOLLOWED_DATA
-        );
+        throw new NotFoundException(EventHandlerErrors.CANT_GET_FOLLOWED_DATA);
       }
 
       if (!followedData.data.isFollowing) {
@@ -114,7 +111,7 @@ export class EventService {
       );
 
       if (followerCountData.statusCode != 200) {
-        throw new InternalServerErrorException(EventHandlerErrors.IS_FOLLOWING);
+        throw new NotFoundException(EventHandlerErrors.IS_FOLLOWING);
       }
       if (followerCountData.data.totalFollowers < campaign.data.minFollower) {
         throw new ForbiddenException(
@@ -164,10 +161,8 @@ export class EventService {
   }
 
   private generateHexString(value) {
-    // Convert the value to hexadecimal and pad with leading zeros if necessary
     const hexValue = value.toString(16).padStart(2, "0");
 
-    // Format the hex value with '0x' prefix
     const hexString = `0x${hexValue}`.toLowerCase();
 
     return hexString;
