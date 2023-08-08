@@ -1,8 +1,10 @@
 import {
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from "@nestjs/common";
 
 import BigNumber from "bignumber.js";
@@ -29,7 +31,7 @@ export class CampaignService {
     private lensApiService: LensApiService,
     private userService: UserService,
     private pendingRewardService: PendingRewardService,
-    private pendingWithdrawService: PendingWithdrawService
+    @Inject(forwardRef(() => PendingWithdrawService)) private pendingWithdrawService: PendingWithdrawService
   ) {}
 
   async createCampaign(
@@ -73,7 +75,7 @@ export class CampaignService {
         userWallet
       );
 
-    const totalPendingWithdraw = await this.getPendingWithdrawsCapacity(
+    const totalPendingWithdraw = await this.pendingWithdrawService.getPendingWithdrawsCapacity(
       userWallet
     );
 
@@ -85,8 +87,10 @@ export class CampaignService {
         )
       ) -
       (activeCampaignsCapacity +
-        notDistributedPendingRewardsForDeactiveCampaigns +
-        totalPendingWithdraw);
+        notDistributedPendingRewardsForDeactiveCampaigns + Number((totalPendingWithdraw.div(CONFIG.TREE_PRICE)).decimalPlaces(
+          0,
+          1
+        )));
 
     if (input.campaignSize > finalCapacity) {
       throw new ForbiddenException(
@@ -166,7 +170,7 @@ export class CampaignService {
         userWallet
       );
 
-    const totalPendingWithdraw = await this.getPendingWithdrawsCapacity(
+    const totalPendingWithdraw = await this.pendingWithdrawService.getPendingWithdrawsCapacity(
       userWallet
     );
 
@@ -178,8 +182,10 @@ export class CampaignService {
         )
       ) -
       (activeCampaignsCapacity +
-        notDistributedPendingRewardsForDeactiveCampaigns +
-        totalPendingWithdraw);
+        notDistributedPendingRewardsForDeactiveCampaigns + Number((totalPendingWithdraw.div(CONFIG.TREE_PRICE)).decimalPlaces(
+          0,
+          1
+        )));
 
     if (campaign.campaignSize - campaign.awardedCount > finalCapacity) {
       throw new ForbiddenException(
@@ -306,7 +312,7 @@ export class CampaignService {
     return resultHandler(200, "campaign data", campaign);
   }
 
-  private async getActiveCampaignsTotalCapacityByCreator(
+  public async getActiveCampaignsTotalCapacityByCreator(
     creator: string
   ): Promise<number> {
     let total = 0;
@@ -324,7 +330,7 @@ export class CampaignService {
     return total;
   }
 
-  private async getNotDistributedPendingRewardsCapacityForDeactiveCampaignsByCreator(
+  public async getNotDistributedPendingRewardsCapacityForDeactiveCampaignsByCreator(
     creator: string,
     campaignIdToActivate?: string
   ): Promise<number> {
@@ -358,14 +364,4 @@ export class CampaignService {
     return total;
   }
 
-  private async getPendingWithdrawsCapacity(creator: string): Promise<number> {
-    let total = 0;
-    const result =
-      await this.pendingWithdrawService.getPendingWithdrawsForCreator(creator);
-    for (let index = 0; index < result.length; index++) {
-      total += result[index].amount;
-    }
-
-    return total;
-  }
 }

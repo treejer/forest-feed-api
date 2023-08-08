@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import BigNumber from "bignumber.js";
 import { Document } from "mongoose";
 
 export type PendingWithdrawDocument = PendingWithdraw & Document;
@@ -8,7 +9,7 @@ export class PendingWithdraw extends Document {
   @Prop({ type: String, required: true })
   recipient;
 
-  @Prop({ type: Number, required: true })
+  @Prop({ type: BigNumber, required: true })
   amount;
 
   @Prop({ type: Boolean, default: false, required: true })

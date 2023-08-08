@@ -42,3 +42,7 @@ export const UserApiErrorMessage = {
 export const web3Errors = {
   HIGH_GAS_PRICE: "gas price is high",
 };
+
+export const pendingWithdrawsErrorMessage = {
+  INSUFFICIENT_ERROR: "Insufficient error",
+};
