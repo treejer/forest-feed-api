@@ -44,7 +44,7 @@ export class EventService {
     return result ? result.lastBlockNumber + 1 : 1;
   }
 
-  async handleMirror(profileId, pubIdPointed, profileIdPointed) {
+  async handleMirror(pubId, profileId, pubIdPointed, profileIdPointed) {
     const publicationId =
       this.generateHexString(profileIdPointed) +
       "-" +
@@ -151,6 +151,10 @@ export class EventService {
         from: from,
         to: to,
         inList,
+        pubId,
+        profileId,
+        pubIdPointed,
+        profileIdPointed,
         status: RewardStatus.PENDING,
       });
 

@@ -11,6 +11,11 @@ export class EventController {
 
   @Get("event")
   async sendEmail() {
-    return await this.eventService.handleMirror("0x8d9a", "0x05", "0x8996");
+    return await this.eventService.handleMirror(
+      "0x01",
+      "0x8d9a",
+      "0x05",
+      "0x8996"
+    );
   }
 }

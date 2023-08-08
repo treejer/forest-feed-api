@@ -52,6 +52,21 @@ export class PendingRewardService {
     });
   }
 
+  public async updatePendingRewardStatus(
+    pendingRewardId: string,
+    status: number,
+    session
+  ) {
+    await this.pendingRewardRepository.updateOne(
+      { _id: pendingRewardId },
+      {
+        $set: { status },
+      },
+      [],
+      session
+    );
+  }
+
   async getPendingRewards(): Promise<Result<PendingReward[]>> {
     const pendingRewardList = await this.pendingRewardRepository.find({
       isDistributed: false,
