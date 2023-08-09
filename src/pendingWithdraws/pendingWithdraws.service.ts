@@ -95,8 +95,6 @@ export class PendingWithdrawService {
 
         throw new InternalServerErrorException(e);
       }
-
-      this.withdrawJobService.addWithdrawRequestToQueue();
     } else {
       throw new BadRequestException(
         pendingWithdrawsErrorMessage.INSUFFICIENT_ERROR
