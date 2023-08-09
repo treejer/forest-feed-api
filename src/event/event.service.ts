@@ -11,7 +11,11 @@ import { CampaignService } from "src/campaigns/campaign.service";
 import { LensApiService } from "src/lens-api/lens-api.service";
 import { PendingRewardService } from "src/pendingReward/pendingReward.service";
 import { QueueService } from "src/queue/queue.service";
-import { EventHandlerErrors, RewardStatus } from "src/common/constants";
+import {
+  EventHandlerErrors,
+  Numbers,
+  RewardStatus,
+} from "src/common/constants";
 
 @Injectable()
 export class EventService {
@@ -44,7 +48,7 @@ export class EventService {
     return result ? result.lastBlockNumber + 1 : 1;
   }
 
-  async handleMirror(profileId, pubIdPointed, profileIdPointed) {
+  async handleMirror(pubId, profileId, pubIdPointed, profileIdPointed) {
     const publicationId =
       this.generateHexString(profileIdPointed) +
       "-" +
@@ -151,12 +155,16 @@ export class EventService {
         from: from,
         to: to,
         inList,
+        pubId,
+        profileId,
+        pubIdPointed,
+        profileIdPointed,
         status: RewardStatus.PENDING,
       });
 
     await this.queueService.addRewardToQueue(
       createdPendingReward.data._id,
-      24 * 60 * 60 * 1000
+      Numbers.REWARD_DELAY
     );
   }
 

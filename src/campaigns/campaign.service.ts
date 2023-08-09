@@ -299,7 +299,7 @@ export class CampaignService {
     return responseHandler(200, "campaign status updated");
   }
 
-  private async getCampaignById(campaignId: string): Promise<Result<Campaign>> {
+  public async getCampaignById(campaignId: string): Promise<Result<Campaign>> {
     const campaign = await this.campaignRepository.findOne({ _id: campaignId });
     if (!campaign) {
       return resultHandler(404, "campaign not found", undefined);
@@ -307,6 +307,20 @@ export class CampaignService {
     return resultHandler(200, "campaign data", campaign);
   }
 
+  public async updateCampaignAwardedCount(
+    campaignId: string,
+    amount: number,
+    session
+  ) {
+    await this.campaignRepository.updateOne(
+      { _id: campaignId },
+      {
+        $inc: { awardedCount: amount },
+      },
+      [],
+      session
+    );
+  }
   private async getActiveCampaignsTotalCapacityByCreator(
     creator: string
   ): Promise<number> {

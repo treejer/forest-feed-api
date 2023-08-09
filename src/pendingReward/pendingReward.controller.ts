@@ -68,4 +68,9 @@ export class PendingRewardController {
   ) {
     return this.pendingRewardService.getMyRewards(user, skip, limit);
   }
+
+  @Get("reward/ali")
+  getAli() {
+    return this.pendingRewardService.getFirstPendingRewardToReward();
+  }
 }

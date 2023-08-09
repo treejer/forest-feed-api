@@ -98,6 +98,7 @@ export class Listener {
               try {
                 ///-------------------> lens service
                 await this.eventService.handleMirror(
+                  event.values.pubId,
                   event.values.profileId,
                   event.values.pubIdPointed,
                   event.values.profileIdPointed

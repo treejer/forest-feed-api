@@ -26,6 +26,18 @@ export class PendingReward extends Document {
   @Prop({ type: Number, required: true })
   order;
 
+  @Prop({ type: String, required: true })
+  pubId;
+
+  @Prop({ type: String, required: true })
+  profileId;
+
+  @Prop({ type: String, required: true })
+  pubIdPointed;
+
+  @Prop({ type: String, required: true })
+  profileIdPointed;
+
   @Prop({ type: Number, required: true })
   status;
 
