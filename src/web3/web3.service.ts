@@ -7,6 +7,7 @@ import { ConfigService } from "@nestjs/config";
 import { Wallet, ethers } from "ethers";
 import { resultHandler } from "src/common/helpers";
 import { Numbers, web3Errors } from "src/common/constants";
+import BigNumber from "bignumber.js";
 const Web3 = require("web3");
 const Contract = require("./../../abi/Contract.json");
 
@@ -66,6 +67,37 @@ export class Web3Service {
       const transactionHash = transactionResponse.transactionHash;
 
       return resultHandler(200, "reward distributed", transactionHash);
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
+  }
+
+  async distributeWithdraw(from: string, amount: BigNumber) {
+    try {
+      const contractAddress = this.configService.get<string>(
+        "FORESTFEED_CONTRACT_ADDRESS"
+      );
+
+      const contractABI = Contract.abi;
+      const contract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        this.signer
+      );
+
+      let gasPrice = await this.provider.getGasPrice();
+
+      if (Number(gasPrice) > Numbers.MAX_GAS_PRICE) {
+        throw new ForbiddenException(web3Errors.HIGH_GAS_PRICE);
+      }
+
+      let transaction = await contract.withdraw(from, amount);
+
+      let transactionResponse = await transaction.wait();
+
+      const transactionHash = transactionResponse.transactionHash;
+
+      return resultHandler(200, "withdraw distributed", transactionHash);
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }

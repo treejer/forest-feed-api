@@ -7,16 +7,17 @@ import {
 } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import BigNumber from "bignumber.js";
-import { Connection } from "mongoose";
+import { ClientSession, Connection } from "mongoose";
 import { JwtUserDto } from "src/auth/dtos";
 import { CONFIG, pendingWithdrawsErrorMessage } from "src/common/constants";
-import { responseHandler } from "src/common/helpers";
+import { responseHandler, resultHandler } from "src/common/helpers";
 import { WithdrawJobService } from "src/queue/queue.service";
 import { CampaignService } from "./../campaigns/campaign.service";
 import { UserService } from "./../user/user.service";
 import { CreatePendingWithdrawDTO } from "./dto";
 import { PendingWithdrawRepository } from "./pendingWithdraws.repository";
 import { PendingWithdraw } from "./schemas";
+import { Result } from "src/database/interfaces/result.interface";
 @Injectable()
 export class PendingWithdrawService {
   constructor(
@@ -41,6 +42,32 @@ export class PendingWithdrawService {
       isDistributed: false,
       recipient,
     });
+  }
+
+  async getPendingWithdrawWithId(id: string): Promise<Result<PendingWithdraw>> {
+    let result = await this.pendingWithdrawRepository.findOne({
+      _id: id,
+      isDistributed: false,
+    });
+
+    if (!result) {
+      return resultHandler(404, "pending withdraw not found", undefined);
+    }
+
+    return resultHandler(200, "pending withdraw data", result);
+  }
+
+  async updatePendingWithdrawStatus(
+    id: string,
+    isDistributed: boolean,
+    session?: ClientSession
+  ) {
+    await this.pendingWithdrawRepository.updateOne(
+      { _id: id },
+      { isDistributed },
+      [],
+      session
+    );
   }
 
   async withderawRequest(amount: BigNumber, jwtInput: JwtUserDto) {

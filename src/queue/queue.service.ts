@@ -16,6 +16,7 @@ import { UserService } from "src/user/user.service";
 import { Web3Service } from "src/web3/web3.service";
 import BigNumber from "bignumber.js";
 import { Numbers, RewardStatus } from "src/common/constants";
+import { PendingWithdrawService } from "src/pendingWithdraws/pendingWithdraws.service";
 
 @Processor("rewards") // Queue name
 export class QueueService {
@@ -237,7 +238,10 @@ export class QueueService {
 @Processor("pendingWithdraw")
 export class WithdrawJobService {
   constructor(
-    @InjectQueue("pendingWithdraw") private readonly withdrawsQueue: Queue
+    @InjectQueue("pendingWithdraw") private readonly withdrawsQueue: Queue,
+    private pendingWithdrawService: PendingWithdrawService,
+    @InjectConnection() private connection: Connection,
+    private web3Service: Web3Service
   ) {}
 
   async addWithdrawRequestToQueue(pendingWithdrawId: string): Promise<IResult> {
@@ -248,27 +252,58 @@ export class WithdrawJobService {
 
   @Process("withdraw")
   async withdraw(job: Job<any>) {
+    let failed = true;
+    let retryCount = 0;
+
     const data = job.data;
 
-    //   throw new InternalServerErrorException();
-    // } catch (error) {
-    //   if (job.attemptsMade >= 2) {
-    //     job.queue.add(
-    //       "send",
-    //       {
-    //         email: "recipient@example.com",
-    //         subject: "Hello from NestJS Queue",
-    //         content: "This is a test email sent via NestJS queue.",
-    //       },
-    //       { delay: 10000 }
-    //     );
-    //     // Job has reached maximum retries, do something or log the error
-    //     console.error(`Job failed after ${job.attemptsMade} attempts.`);
-    //   } else {
-    //     // Retry the job
+    while (failed && retryCount < 2) {
+      try {
+        //----------------> try to found pending withdraw request (if found error goto catch,if 404 remove from queue , 200 countinue)
 
-    //     await job.retry();
-    //   }
-    // }
+        const pendingWithdraw =
+          await this.pendingWithdrawService.getPendingWithdrawWithId(data);
+
+        if (pendingWithdraw.statusCode == 200) {
+          //---->  try to call blockchain and update database
+
+          const session = await this.connection.startSession();
+          await session.startTransaction();
+
+          try {
+            await this.pendingWithdrawService.updatePendingWithdrawStatus(
+              data,
+              true
+            );
+
+            let result = await this.web3Service.distributeWithdraw(
+              pendingWithdraw.data.recipient,
+              pendingWithdraw.data.amount
+            );
+
+            await session.commitTransaction();
+
+            session.endSession();
+          } catch (e) {
+            await session.abortTransaction();
+
+            session.endSession();
+
+            throw new InternalServerErrorException(e);
+          }
+        }
+      } catch (error) {
+        retryCount++;
+        if (retryCount == 2) {
+          await job.retry();
+        } else {
+          await this.sleep(500);
+        }
+      }
+    }
+  }
+
+  async sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
