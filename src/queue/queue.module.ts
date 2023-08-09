@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { QueueService } from "./queue.service";
+import { QueueService, WithdrawJobService } from "./queue.service";
 import { QueueController } from "./queue.controller";
 import { BullModule } from "@nestjs/bull";
 import { ConfigService } from "@nestjs/config";
@@ -8,6 +8,7 @@ import { Web3Module } from "src/web3/web3.module";
 import { CampaignModule } from "src/campaigns/campaign.module";
 import { LensApiModule } from "src/lens-api/lens-api.module";
 import { UserModule } from "src/user/user.module";
+import { PendingWithdrawModule } from "src/pendingWithdraws/pendingWithdraws.module";
 @Module({
   imports: [
     BullModule.forRoot({
@@ -28,14 +29,26 @@ import { UserModule } from "src/user/user.module";
         removeOnComplete: true,
       },
     }),
+    BullModule.registerQueue({
+      name: "pendingWithdraw", // Queue name
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: 1000, // 1 second delay between retries
+
+        // Move the job to the dead-letter queue after 3 retries
+        removeOnComplete: true,
+        removeOnFail: 3,
+      },
+    }),
     CampaignModule,
     LensApiModule,
     PendingRewardModule,
+    PendingWithdrawModule,
     Web3Module,
     UserModule,
   ],
   controllers: [QueueController],
-  providers: [QueueService],
-  exports: [QueueService],
+  providers: [QueueService, WithdrawJobService],
+  exports: [QueueService, WithdrawJobService],
 })
 export class QueueModule {}

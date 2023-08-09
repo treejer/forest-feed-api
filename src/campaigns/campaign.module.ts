@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { CampaignService } from "./campaign.service";
 import { Campaign, CampaignSchema } from "./schemas";
@@ -10,6 +10,9 @@ import { UserModule } from "src/user/user.module";
 import { PendingWithdrawModule } from "src/pendingWithdraws/pendingWithdraws.module";
 import { PendingRewardModule } from "src/pendingReward/pendingReward.module";
 import { CampaignController } from "./campaign.controller";
+
+
+
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -19,7 +22,7 @@ import { CampaignController } from "./campaign.controller";
     LensApiModule,
     UserModule,
     PendingRewardModule,
-    PendingWithdrawModule,
+    forwardRef(() => PendingWithdrawModule)
   ],
   controllers: [CampaignController],
   providers: [CampaignService, ConfigService, CampaignRepository],

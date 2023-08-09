@@ -30,6 +30,9 @@ export enum LastStateIds {
   MIRROR = "4d4952524f52000000000000",
 }
 
+export const CONFIG = {
+  TREE_PRICE: "10000000000000000000",
+};
 export enum RewardStatus {
   PENDING = 1,
   CONFIRMED = 2,

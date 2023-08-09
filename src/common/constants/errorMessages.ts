@@ -36,11 +36,15 @@ export const CampaignErrorMessage = {
 
 export const UserApiErrorMessage = {
   USER_NOT_FOUND: "user not found",
-  TRANSACTION_DUPLICATED:"Transaction Duplicated."
+  TRANSACTION_DUPLICATED: "Transaction Duplicated.",
 };
 
 export const web3Errors = {
   HIGH_GAS_PRICE: "gas price is high",
+};
+
+export const pendingWithdrawsErrorMessage = {
+  INSUFFICIENT_ERROR: "Insufficient error",
 };
 
 export const EventHandlerErrors = {
