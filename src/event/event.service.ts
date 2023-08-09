@@ -11,7 +11,11 @@ import { CampaignService } from "src/campaigns/campaign.service";
 import { LensApiService } from "src/lens-api/lens-api.service";
 import { PendingRewardService } from "src/pendingReward/pendingReward.service";
 import { QueueService } from "src/queue/queue.service";
-import { EventHandlerErrors, RewardStatus } from "src/common/constants";
+import {
+  EventHandlerErrors,
+  Numbers,
+  RewardStatus,
+} from "src/common/constants";
 
 @Injectable()
 export class EventService {
@@ -160,7 +164,7 @@ export class EventService {
 
     await this.queueService.addRewardToQueue(
       createdPendingReward.data._id,
-      24 * 60 * 60 * 1000
+      Numbers.REWARD_DELAY
     );
   }
 

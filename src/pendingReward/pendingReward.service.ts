@@ -5,7 +5,7 @@ import { CreatePendingRewardDTO, MyRewardsResultDto } from "./dto";
 import { RewardStatus } from "src/common/constants";
 import { JwtUserDto } from "src/auth/dtos";
 import { Result } from "src/database/interfaces/result.interface";
-import { resultHandler } from "src/common/helpers";
+import { responseHandler, resultHandler } from "src/common/helpers";
 
 @Injectable()
 export class PendingRewardService {
@@ -65,6 +65,28 @@ export class PendingRewardService {
       [],
       session
     );
+  }
+
+  public async addPendingRewardToList(pendingRewardId: string) {
+    await this.pendingRewardRepository.updateOne(
+      { _id: pendingRewardId },
+      {
+        $set: { inList: true },
+      }
+    );
+  }
+
+  public async getFirstPendingRewardToReward(): Promise<Result<PendingReward>> {
+    const result = await this.pendingRewardRepository.sort(
+      { inList: false },
+      { order: 1 }
+    )[0];
+
+    if (!result[0]) {
+      return resultHandler(404, "not found", null);
+    }
+
+    return resultHandler(200, "pending reward data", result[0]);
   }
 
   async getPendingRewards(): Promise<Result<PendingReward[]>> {

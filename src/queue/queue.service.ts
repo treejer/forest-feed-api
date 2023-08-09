@@ -15,7 +15,7 @@ import { PendingReward } from "src/pendingReward/schemas";
 import { UserService } from "src/user/user.service";
 import { Web3Service } from "src/web3/web3.service";
 import BigNumber from "bignumber.js";
-import { RewardStatus } from "src/common/constants";
+import { Numbers, RewardStatus } from "src/common/constants";
 
 @Processor("rewards") // Queue name
 export class QueueService {
@@ -167,7 +167,25 @@ export class QueueService {
             throw new InternalServerErrorException(e);
           }
         } else {
-          //add first inList=false to queue and change its inList to true for this campaign
+          let newPendingReward =
+            await this.pendingRewardService.getFirstPendingRewardToReward();
+          //updatePendingReward inList to true
+
+          if (newPendingReward.statusCode == 200) {
+            await this.pendingRewardService.addPendingRewardToList(
+              newPendingReward.data._id
+            );
+
+            let now = new Date();
+            let createdTime = new Date(newPendingReward.data.createdAt);
+
+            let newDelay = Math.max(
+              Numbers.REWARD_DELAY - (now.getTime() - createdTime.getTime()),
+              0
+            );
+            await this.addRewardToQueue(newPendingReward.data._id, newDelay);
+            //add first inList=false to queue and change its inList to true for this campaign
+          }
         }
 
         failed = false;
