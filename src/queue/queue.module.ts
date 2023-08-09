@@ -1,7 +1,7 @@
-import { Module } from "@nestjs/common";
-import { SendEmailJob } from "./queue.service";
-import { AppController } from "./queue.controller";
 import { BullModule } from "@nestjs/bull";
+import { Module } from "@nestjs/common";
+import { AppController } from "./queue.controller";
+import { SendEmailJob, WithdrawJobService } from "./queue.service";
 @Module({
   imports: [
     BullModule.forRoot({
@@ -23,9 +23,20 @@ import { BullModule } from "@nestjs/bull";
         removeOnFail: 3,
       },
     }),
+    BullModule.registerQueue({
+      name: "pendingWithdraw", // Queue name
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: 1000, // 1 second delay between retries
+
+        // Move the job to the dead-letter queue after 3 retries
+        removeOnComplete: true,
+        removeOnFail: 3,
+      },
+    }),
   ],
   controllers: [AppController],
-  providers: [SendEmailJob],
+  providers: [SendEmailJob, WithdrawJobService],
   exports: [SendEmailJob],
 })
 export class QueueModule {}
