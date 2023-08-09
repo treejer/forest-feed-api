@@ -8,6 +8,7 @@ import { Web3Module } from "src/web3/web3.module";
 import { CampaignModule } from "src/campaigns/campaign.module";
 import { LensApiModule } from "src/lens-api/lens-api.module";
 import { UserModule } from "src/user/user.module";
+import { PendingWithdrawModule } from "src/pendingWithdraws/pendingWithdraws.module";
 @Module({
   imports: [
     BullModule.forRoot({
@@ -42,6 +43,7 @@ import { UserModule } from "src/user/user.module";
     CampaignModule,
     LensApiModule,
     PendingRewardModule,
+    PendingWithdrawModule,
     Web3Module,
     UserModule,
   ],
