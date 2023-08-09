@@ -31,7 +31,8 @@ export class CampaignService {
     private lensApiService: LensApiService,
     private userService: UserService,
     private pendingRewardService: PendingRewardService,
-    @Inject(forwardRef(() => PendingWithdrawService)) private pendingWithdrawService: PendingWithdrawService
+    @Inject(forwardRef(() => PendingWithdrawService))
+    private pendingWithdrawService: PendingWithdrawService
   ) {}
 
   async createCampaign(
@@ -75,9 +76,8 @@ export class CampaignService {
         userWallet
       );
 
-    const totalPendingWithdraw = await this.pendingWithdrawService.getPendingWithdrawsCapacity(
-      userWallet
-    );
+    const totalPendingWithdraw =
+      await this.pendingWithdrawService.getPendingWithdrawsCapacity(userWallet);
 
     const finalCapacity =
       Number(
@@ -87,10 +87,10 @@ export class CampaignService {
         )
       ) -
       (activeCampaignsCapacity +
-        notDistributedPendingRewardsForDeactiveCampaigns + Number((totalPendingWithdraw.div(CONFIG.TREE_PRICE)).decimalPlaces(
-          0,
-          1
-        )));
+        notDistributedPendingRewardsForDeactiveCampaigns +
+        Number(
+          totalPendingWithdraw.div(CONFIG.TREE_PRICE).decimalPlaces(0, 1)
+        ));
 
     if (input.campaignSize > finalCapacity) {
       throw new ForbiddenException(
@@ -170,9 +170,8 @@ export class CampaignService {
         userWallet
       );
 
-    const totalPendingWithdraw = await this.pendingWithdrawService.getPendingWithdrawsCapacity(
-      userWallet
-    );
+    const totalPendingWithdraw =
+      await this.pendingWithdrawService.getPendingWithdrawsCapacity(userWallet);
 
     const finalCapacity =
       Number(
@@ -182,10 +181,10 @@ export class CampaignService {
         )
       ) -
       (activeCampaignsCapacity +
-        notDistributedPendingRewardsForDeactiveCampaigns + Number((totalPendingWithdraw.div(CONFIG.TREE_PRICE)).decimalPlaces(
-          0,
-          1
-        )));
+        notDistributedPendingRewardsForDeactiveCampaigns +
+        Number(
+          totalPendingWithdraw.div(CONFIG.TREE_PRICE).decimalPlaces(0, 1)
+        ));
 
     if (campaign.campaignSize - campaign.awardedCount > finalCapacity) {
       throw new ForbiddenException(
@@ -291,6 +290,18 @@ export class CampaignService {
       pendingRewards: pendingRewards.data,
     });
   }
+  async getActiveCampaignByPublicationId(
+    publicationId: string
+  ): Promise<Result<Campaign>> {
+    const campaign = await this.campaignRepository.findOne({
+      publicationId,
+      status: CampaignStatus.ACTIVE,
+    });
+    if (!campaign) {
+      return resultHandler(404, "campaign not found", undefined);
+    }
+    return resultHandler(200, "campaign data", campaign);
+  }
 
   private async updateCampaignStatusById(
     campaignId: string,
@@ -304,12 +315,27 @@ export class CampaignService {
     return responseHandler(200, "campaign status updated");
   }
 
-  private async getCampaignById(campaignId: string): Promise<Result<Campaign>> {
+  public async getCampaignById(campaignId: string): Promise<Result<Campaign>> {
     const campaign = await this.campaignRepository.findOne({ _id: campaignId });
     if (!campaign) {
       return resultHandler(404, "campaign not found", undefined);
     }
     return resultHandler(200, "campaign data", campaign);
+  }
+
+  public async updateCampaignAwardedCount(
+    campaignId: string,
+    amount: number,
+    session
+  ) {
+    await this.campaignRepository.updateOne(
+      { _id: campaignId },
+      {
+        $inc: { awardedCount: amount },
+      },
+      [],
+      session
+    );
   }
 
   public async getActiveCampaignsTotalCapacityByCreator(
@@ -363,5 +389,4 @@ export class CampaignService {
 
     return total;
   }
-
 }

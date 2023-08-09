@@ -1,4 +1,5 @@
 export const Numbers = {
   LOGIN_TOKEN_EXPIRATION_BOUND: 86400000,
   MAX_GAS_PRICE: 10,
+  REWARD_DELAY: 24 * 60 * 60 * 1000, //24h
 };

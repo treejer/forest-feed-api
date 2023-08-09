@@ -36,7 +36,7 @@ export const CampaignErrorMessage = {
 
 export const UserApiErrorMessage = {
   USER_NOT_FOUND: "user not found",
-  TRANSACTION_DUPLICATED:"Transaction Duplicated."
+  TRANSACTION_DUPLICATED: "Transaction Duplicated.",
 };
 
 export const web3Errors = {
@@ -45,4 +45,15 @@ export const web3Errors = {
 
 export const pendingWithdrawsErrorMessage = {
   INSUFFICIENT_ERROR: "Insufficient error",
+};
+
+export const EventHandlerErrors = {
+  CAMPAIGN_NOT_FOUND: "campaign not found!",
+  CANT_GET_FROM: "can't get from address",
+  CANT_GET_TO: "can't get to address",
+  ALREADY_MIRRORED: "already mirrored",
+  CANT_GET_FOLLOWED_DATA: "can't get followed data",
+  IS_FOLLOWING: "can't get is following data",
+  NOT_FOLLOWING_POST_OWNER: "not following post owner",
+  MIN_FOLLOWER_NOT_SATISFIED: "min follower not satisfied",
 };

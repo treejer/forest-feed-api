@@ -11,8 +11,6 @@ import { join } from "path";
 import { SchedulerModule } from "./scheduler/scheduler.module";
 import { PendingRewardModule } from "./pendingReward/pendingReward.module";
 import { LensApiModule } from "./lens-api/lens-api.module";
-
-import { SendEmailJob } from "./queue/queue.service";
 import { QueueModule } from "./queue/queue.module";
 import { CampaignModule } from "./campaigns/campaign.module";
 import { EventModule } from "./event/event.module";
@@ -30,7 +28,7 @@ import { EventModule } from "./event/event.module";
     LensApiModule,
     CampaignModule,
     EventModule,
-    // QueueModule,
+    QueueModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "views"),

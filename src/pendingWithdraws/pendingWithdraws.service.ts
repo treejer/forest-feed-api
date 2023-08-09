@@ -22,9 +22,11 @@ export class PendingWithdrawService {
   constructor(
     private pendingWithdrawRepository: PendingWithdrawRepository,
     private userService: UserService,
-    private withdrawJobService: WithdrawJobService,
+
     @Inject(forwardRef(() => CampaignService))
     private campaignService: CampaignService,
+    @Inject(forwardRef(() => WithdrawJobService))
+    private withdrawJobService: WithdrawJobService,
     @InjectConnection() private connection: Connection
   ) {}
 

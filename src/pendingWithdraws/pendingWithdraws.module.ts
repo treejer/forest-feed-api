@@ -7,6 +7,7 @@ import { DatabaseModule } from "../database/database.module";
 import { PendingWithdrawRepository } from "./pendingWithdraws.repository";
 import { UserModule } from "src/user/user.module";
 import { CampaignModule } from "src/campaigns/campaign.module";
+import { QueueModule } from "src/queue/queue.module";
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -14,7 +15,8 @@ import { CampaignModule } from "src/campaigns/campaign.module";
     ]),
     DatabaseModule,
     UserModule,
-    forwardRef(() => CampaignModule)
+    forwardRef(() => QueueModule),
+    forwardRef(() => CampaignModule),
   ],
   controllers: [],
   providers: [PendingWithdrawService, ConfigService, PendingWithdrawRepository],

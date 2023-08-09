@@ -33,3 +33,8 @@ export enum LastStateIds {
 export const CONFIG = {
   TREE_PRICE: "10000000000000000000",
 };
+export enum RewardStatus {
+  PENDING = 1,
+  CONFIRMED = 2,
+  REJECTED = 3,
+}

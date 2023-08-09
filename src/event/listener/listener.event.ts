@@ -38,7 +38,7 @@ export class Listener {
     private configService: ConfigService,
     private eventService: EventService,
     private bugSnag: BugsnagService,
-    private userService:UserService
+    private userService: UserService
   ) {}
 
   @Command({
@@ -97,9 +97,26 @@ export class Listener {
             if (event.name === LensEventName.Mirror_CREATED) {
               try {
                 ///-------------------> lens service
+                await this.eventService.handleMirror(
+                  event.values.pubId,
+                  event.values.profileId,
+                  event.values.pubIdPointed,
+                  event.values.profileIdPointed
+                );
               } catch (error) {
-                reject(error);
-                console.log("TREE_ASSIGNED error", error);
+                if (
+                  error &&
+                  error.response &&
+                  (error.response.statusCode == 409 ||
+                    error.response.statusCode == 404 ||
+                    error.response.statusCode == 403)
+                ) {
+                  console.log("error.response", error.response);
+                  console.log("DEPOSITED error", error);
+                } else {
+                  console.log("error.response", error.response);
+                  reject("error");
+                }
               }
             }
           }
@@ -182,7 +199,7 @@ export class Listener {
     let lastErrorTime = new Date();
 
     ethereumEvents.on("block.confirmed", async (blockNumber, events, done) => {
-      console.log("block.confirmed", blockNumber,events);
+      console.log("block.confirmed", blockNumber, events);
 
       lastErrorTime = new Date();
 
@@ -191,13 +208,22 @@ export class Listener {
           for (let event of events) {
             if (event.name === ForestFeedEventName.DEPOSITED) {
               try {
-                await this.userService.updateUserBalance(event.values.creator,BigNumber(event.values.amount),event.transactionHash);
+                await this.userService.updateUserBalance(
+                  event.values.creator,
+                  BigNumber(event.values.amount),
+                  event.transactionHash
+                );
               } catch (error) {
-                if(error && error.response && (error.response.statusCode == 409 || error.response.statusCode == 404)){
-                  console.log("error.response",error.response)
+                if (
+                  error &&
+                  error.response &&
+                  (error.response.statusCode == 409 ||
+                    error.response.statusCode == 404)
+                ) {
+                  console.log("error.response", error.response);
                   console.log("DEPOSITED error", error);
-                }else{
-                  console.log("error.response",error.response)
+                } else {
+                  console.log("error.response", error.response);
                   reject("error");
                 }
               }
