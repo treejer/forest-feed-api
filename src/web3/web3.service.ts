@@ -36,10 +36,17 @@ export class Web3Service {
         console.error("web3Instance : Something went wrong : " + e)
       );
 
-    const web3Provider = this.configService.get<string>("WEB3_PROVIDER_TEST");
+    const web3Provider =
+      this.configService.get<string>("NODE_ENV") == "production"
+        ? this.configService.get<string>("WEB3_PROVIDER")
+        : this.configService.get<string>("WEB3_PROVIDER_TEST");
 
     this.provider = new ethers.providers.JsonRpcProvider(web3Provider);
-    const privateKey = this.configService.get<string>("SCRIPT_PK_TEST");
+
+    const privateKey =
+      this.configService.get<string>("NODE_ENV") == "production"
+        ? this.configService.get<string>("SCRIPT_PK")
+        : this.configService.get<string>("SCRIPT_PK_TEST");
 
     this.signer = new Wallet(privateKey, this.provider);
   }
