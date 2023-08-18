@@ -44,7 +44,8 @@ export const web3Errors = {
 };
 
 export const pendingWithdrawsErrorMessage = {
-  INSUFFICIENT_ERROR: "Insufficient error",
+  INSUFFICIENT_ERROR: "Insufficient balance",
+  AMOUNT_IS_NOT_TRUE: "amount is not true",
 };
 
 export const EventHandlerErrors = {

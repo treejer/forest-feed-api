@@ -13,31 +13,28 @@ import { PendingWithdrawModule } from "src/pendingWithdraws/pendingWithdraws.mod
   imports: [
     BullModule.forRoot({
       redis: {
-        // password: "QUEUE_PASS",
-        host: "localhost", // Redis server host
-        port: 6379, // Redis server port
+        password: "urfE0FbCpwI0kV361jCN7mJvfYLDrTZm",
+        host: "redis-11280.c273.us-east-1-2.ec2.cloud.redislabs.com", // Redis server host
+        port: 11280, // Redis server port
+        // // password: "QUEUE_PASS",
+        // host: "localhost", // Redis server host
+        // port: 6379, // Redis server port
       },
     }),
     BullModule.registerQueue({
-      name: "rewards", // Queue name
+      name: "rewards",
       defaultJobOptions: {
         attempts: 30,
-        // lifo: true,
-
         backoff: 2000,
-        // Move the job to the dead-letter queue after 3 retries
         removeOnComplete: true,
       },
     }),
     BullModule.registerQueue({
-      name: "pendingWithdraw", // Queue name
+      name: "pendingWithdraw",
       defaultJobOptions: {
-        attempts: 3,
-        backoff: 1000, // 1 second delay between retries
-
-        // Move the job to the dead-letter queue after 3 retries
+        attempts: 30,
+        backoff: 1000,
         removeOnComplete: true,
-        removeOnFail: 3,
       },
     }),
     CampaignModule,

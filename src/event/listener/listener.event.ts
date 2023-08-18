@@ -209,7 +209,7 @@ export class Listener {
             if (event.name === ForestFeedEventName.DEPOSITED) {
               try {
                 await this.userService.updateUserBalance(
-                  event.values.creator,
+                  event.values.creator.toLowerCase(),
                   BigNumber(event.values.amount),
                   event.transactionHash
                 );

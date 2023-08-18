@@ -13,7 +13,7 @@ import { CreateUserDto, GetUserMeDto, UserDto } from "./dtos";
 import { User } from "./schemas";
 import { UserRepository } from "./user.repository";
 import BigNumber from "bignumber.js";
-import { Connection } from "mongoose";
+import { ClientSession, Connection } from "mongoose";
 import { InjectConnection } from "@nestjs/mongoose";
 import { BalanceTransactionRepository } from "./balanceTransaction.repository";
 
@@ -93,7 +93,11 @@ export class UserService {
     }
   }
 
-  async setUserBalance(walletAddress: string, amount: BigNumber, session) {
+  async setUserBalance(
+    walletAddress: string,
+    amount: BigNumber,
+    session?: ClientSession
+  ) {
     const user = await this.userRepository.findOne(
       { walletAddress },
       {
