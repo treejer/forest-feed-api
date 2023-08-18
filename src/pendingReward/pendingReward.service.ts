@@ -67,12 +67,13 @@ export class PendingRewardService {
     );
   }
 
-  public async addPendingRewardToList(pendingRewardId: string) {
+  public async addPendingRewardToList(pendingRewardId: string, session) {
     await this.pendingRewardRepository.updateOne(
       { _id: pendingRewardId },
       {
         $set: { inList: true },
-      }
+      },
+      session
     );
   }
 

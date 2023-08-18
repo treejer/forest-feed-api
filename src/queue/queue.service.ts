@@ -1,7 +1,11 @@
 // send-email.job.ts
 
 import { InjectQueue, Process, Processor } from "@nestjs/bull";
-import { InternalServerErrorException } from "@nestjs/common";
+import {
+  ForbiddenException,
+  InternalServerErrorException,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Job, Queue } from "bull";
 
@@ -15,7 +19,12 @@ import { PendingReward } from "src/pendingReward/schemas";
 import { UserService } from "src/user/user.service";
 import { Web3Service } from "src/web3/web3.service";
 import BigNumber from "bignumber.js";
-import { Numbers, RewardStatus } from "src/common/constants";
+import {
+  EventHandlerErrors,
+  LensApiErrorMessage,
+  Numbers,
+  RewardStatus,
+} from "src/common/constants";
 import { PendingWithdrawService } from "src/pendingWithdraws/pendingWithdraws.service";
 
 @Processor("rewards") // Queue name
@@ -61,12 +70,13 @@ export class QueueService {
     let failed = true;
     let retryCount = 0;
     let okToReward = true;
+    let mirrorExistanseChecked = true;
+    let followingPostCreatorChecked = true;
+    let followerCountChecked = true;
 
     const data = job.data;
 
     while (failed && retryCount < 2) {
-      console.log("data", data);
-
       try {
         // if (data == "2") {
         //   throw new InternalServerErrorException();
@@ -81,54 +91,79 @@ export class QueueService {
           _id: data,
         });
         if (pendingReward.statusCode != 200) {
-          throw new InternalServerErrorException();
-        }
-
-        const campaign = await this.campaignService.getCampaignById(
-          pendingReward.data.campaignId
-        );
-
-        if (campaign.statusCode != 200) {
-          throw new InternalServerErrorException();
-        }
-
-        if (campaign.data.isFollowerOnly) {
-          const followedData =
-            await this.lensApiService.getProfileAFollowedByProfileB(
-              pendingReward.data.profileId,
-              pendingReward.data.profileIdPointed
-            );
-
-          console.log("followed", followedData);
-
-          if (followedData.statusCode != 200) {
-            throw new InternalServerErrorException();
-          }
-
-          if (!followedData.data.isFollowing) {
-            okToReward = false;
-          }
-        }
-
-        if (campaign.data.minFollower > 0 && okToReward) {
-          const followerCountData = await this.lensApiService.getFollowersCount(
-            pendingReward.data.profileId
+          throw new NotFoundException(
+            EventHandlerErrors.PENDING_REWARD_NOT_FOUND
           );
-          console.log("followerCountData", followerCountData);
+        }
 
-          if (followerCountData.statusCode != 200) {
-            throw new InternalServerErrorException();
+        let publicationStatus =
+          await this.lensApiService.getMirroredPublicationStatus(
+            pendingReward.data.profileId + "-" + pendingReward.data.pubId
+          );
+
+        console.log("publicationStatus", publicationStatus);
+
+        if (publicationStatus.statusCode != 200) {
+          throw new NotFoundException(EventHandlerErrors.PUBLICATION_NOT_FOUND);
+        }
+
+        if (publicationStatus.data) {
+          mirrorExistanseChecked = false;
+        }
+
+        if (mirrorExistanseChecked) {
+          const campaign = await this.campaignService.getCampaignById(
+            pendingReward.data.campaignId
+          );
+
+          if (campaign.statusCode != 200) {
+            throw new NotFoundException(EventHandlerErrors.CAMPAIGN_NOT_FOUND);
           }
-          if (
-            followerCountData.data.totalFollowers < campaign.data.minFollower
-          ) {
-            okToReward = false;
+
+          if (campaign.data.isFollowerOnly) {
+            const followedData =
+              await this.lensApiService.getProfileAFollowedByProfileB(
+                pendingReward.data.profileId,
+                pendingReward.data.profileIdPointed
+              );
+            console.log("followedData", followedData);
+            if (followedData.statusCode != 200) {
+              throw new NotFoundException(
+                EventHandlerErrors.CANT_GET_FOLLOWED_DATA
+              );
+            }
+
+            if (!followedData.data.isFollowing) {
+              followingPostCreatorChecked = false;
+            }
+          }
+
+          if (campaign.data.minFollower > 0 && followerCountChecked) {
+            const followerCountData =
+              await this.lensApiService.getFollowersCount(
+                pendingReward.data.profileId
+              );
+            console.log("followerCountData", followerCountData);
+
+            if (followerCountData.statusCode != 200) {
+              throw new NotFoundException(EventHandlerErrors.IS_FOLLOWING);
+            }
+            if (
+              followerCountData.data.totalFollowers < campaign.data.minFollower
+            ) {
+              followerCountChecked = false;
+            }
           }
         }
 
-        // console.log("pending", pendingReward);
         // //check if condition pass
-        if (okToReward) {
+        if (
+          mirrorExistanseChecked &&
+          followingPostCreatorChecked &&
+          followerCountChecked
+        ) {
+          console.log("ok to reward");
+
           const session = await this.connection.startSession();
           await session.startTransaction();
           try {
@@ -140,7 +175,7 @@ export class QueueService {
             );
 
             await this.campaignService.updateCampaignAwardedCount(
-              campaign.data._id,
+              pendingReward.data.campaignId,
               pendingReward.data.amount,
               session
             );
@@ -173,18 +208,40 @@ export class QueueService {
           //updatePendingReward inList to true
 
           if (newPendingReward.statusCode == 200) {
-            await this.pendingRewardService.addPendingRewardToList(
-              newPendingReward.data._id
-            );
+            const session = await this.connection.startSession();
+            await session.startTransaction();
 
-            let now = new Date();
-            let createdTime = new Date(newPendingReward.data.createdAt);
+            ///////////////////////////////////////////////////////////////////////////////////
+            try {
+              await this.pendingRewardService.addPendingRewardToList(
+                newPendingReward.data._id,
+                session
+              );
 
-            let newDelay = Math.max(
-              Numbers.REWARD_DELAY - (now.getTime() - createdTime.getTime()),
-              0
-            );
-            await this.addRewardToQueue(newPendingReward.data._id, newDelay);
+              let now = new Date();
+              let createdTime = new Date(newPendingReward.data.createdAt);
+
+              let newDelay = Math.max(
+                Numbers.REWARD_DELAY - (now.getTime() - createdTime.getTime()),
+                0
+              );
+              await this.addRewardToQueue(newPendingReward.data._id, newDelay);
+
+              await session.commitTransaction();
+
+              session.endSession();
+
+              return responseHandler(200, "user balance updated");
+            } catch (e) {
+              await session.abortTransaction();
+
+              session.endSession();
+
+              throw new InternalServerErrorException(e);
+            }
+
+            /////////////////////////////////////////////////////////////////////
+
             //add first inList=false to queue and change its inList to true for this campaign
           }
         }
@@ -193,7 +250,7 @@ export class QueueService {
       } catch (error) {
         retryCount++;
         if (retryCount == 2) {
-          console.log("aaaa");
+          console.log("limit reached");
 
           await job.retry();
         } else {
