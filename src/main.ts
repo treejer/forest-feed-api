@@ -24,6 +24,8 @@ async function bootstrap() {
     new ErrorFilter(bugsnagService.getBugsnag(), configService)
   );
 
+  let serverUrl = configService.get("SERVER_URL");
+
   const config = new DocumentBuilder()
     .setTitle("ForestFeed API")
     .setDescription("API for forestfeed")
@@ -31,8 +33,7 @@ async function bootstrap() {
     .addTag("Forestfees")
     .setContact("ForestFeed", "https://treejer.com/contact", "")
     .addBearerAuth()
-    // .addServer("http://localhost:3333")
-    .addServer("https://apidev.forestfeed.app")
+    .addServer(serverUrl)
     .build();
 
   const options: SwaggerDocumentOptions = {
@@ -40,11 +41,12 @@ async function bootstrap() {
   };
 
   const document = SwaggerModule.createDocument(app, config, options);
+
   SwaggerModule.setup("api", app, document);
 
   app.enableCors();
 
-  await app.listen(8080);
+  await app.listen(configService.get<number>("PORT"));
 }
 
 bootstrap();
