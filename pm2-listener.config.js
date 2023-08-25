@@ -11,5 +11,5 @@ module.exports = {
     ],
   };
   
-  //-----> how to run  type=balance pm2 start ./pm2-balance-listener.config.js --name balance-listener
+  //-----> how to run  type=balance pm2 start ./pm2-listener.config.js --name balance-listener
   
