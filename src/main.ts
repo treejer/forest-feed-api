@@ -24,15 +24,16 @@ async function bootstrap() {
     new ErrorFilter(bugsnagService.getBugsnag(), configService)
   );
 
+  let serverUrl = configService.get("SERVER_URL");
+
   const config = new DocumentBuilder()
     .setTitle("ForestFeed API")
-    .setDescription("API for treejer Forestfeed")
-    .setVersion("0.0.1")
+    .setDescription("API for forestfeed")
+    .setVersion("0.1.0")
     .addTag("Forestfees")
-    .setContact("Treejer", "https://treejer.com/contact", "")
+    .setContact("ForestFeed", "https://treejer.com/contact", "")
     .addBearerAuth()
-    .addServer("http://localhost:3333")
-    // .addServer("https://nestapi.treejer.com")
+    .addServer(serverUrl)
     .build();
 
   const options: SwaggerDocumentOptions = {
@@ -40,11 +41,12 @@ async function bootstrap() {
   };
 
   const document = SwaggerModule.createDocument(app, config, options);
+
   SwaggerModule.setup("api", app, document);
 
   app.enableCors();
 
-  await app.listen(3333);
+  await app.listen(configService.get<number>("PORT"));
 }
 
 bootstrap();
