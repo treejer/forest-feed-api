@@ -71,6 +71,6 @@ export class PendingRewardController {
 
   @Get("reward/ali")
   getAli() {
-    return this.pendingRewardService.getFirstPendingRewardToReward();
+    return this.pendingRewardService.getFirstPendingRewardToReward("");
   }
 }

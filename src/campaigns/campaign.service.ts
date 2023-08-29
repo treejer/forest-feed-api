@@ -337,6 +337,20 @@ export class CampaignService {
       session
     );
   }
+  public async updateCampaignStatus(
+    campaignId: string,
+    status: number,
+    session
+  ) {
+    await this.campaignRepository.updateOne(
+      { _id: campaignId },
+      {
+        $inc: { status },
+      },
+      [],
+      session
+    );
+  }
 
   public async getActiveCampaignsTotalCapacityByCreator(
     creator: string

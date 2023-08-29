@@ -26,6 +26,7 @@ import {
   RewardStatus,
 } from "src/common/constants";
 import { PendingWithdrawService } from "src/pendingWithdraws/pendingWithdraws.service";
+import { CampaignStatus } from "src/campaigns/enum";
 
 @Processor("rewards") // Queue name
 export class QueueService {
@@ -73,23 +74,16 @@ export class QueueService {
     let mirrorExistanseChecked = true;
     let followingPostCreatorChecked = true;
     let followerCountChecked = true;
+    let campaign;
 
     const data = job.data;
 
     while (failed && retryCount < 2) {
       try {
-        // if (data == "2") {
-        //   throw new InternalServerErrorException();
-        // }
-
-        // if (data == "3" && this.x == 0) {
-        //   this.x++;
-        //   await this.addRewardToQueue("3");
-        // }
-
         const pendingReward = await this.pendingRewardService.getPendingReward({
           _id: data,
         });
+
         if (pendingReward.statusCode != 200) {
           throw new NotFoundException(
             EventHandlerErrors.PENDING_REWARD_NOT_FOUND
@@ -101,8 +95,6 @@ export class QueueService {
             pendingReward.data.profileId + "-" + pendingReward.data.pubId
           );
 
-        console.log("publicationStatus", publicationStatus);
-
         if (publicationStatus.statusCode != 200) {
           throw new NotFoundException(EventHandlerErrors.PUBLICATION_NOT_FOUND);
         }
@@ -112,7 +104,7 @@ export class QueueService {
         }
 
         if (mirrorExistanseChecked) {
-          const campaign = await this.campaignService.getCampaignById(
+          campaign = await this.campaignService.getCampaignById(
             pendingReward.data.campaignId
           );
 
@@ -126,7 +118,7 @@ export class QueueService {
                 pendingReward.data.profileId,
                 pendingReward.data.profileIdPointed
               );
-            console.log("followedData", followedData);
+
             if (followedData.statusCode != 200) {
               throw new NotFoundException(
                 EventHandlerErrors.CANT_GET_FOLLOWED_DATA
@@ -143,7 +135,6 @@ export class QueueService {
               await this.lensApiService.getFollowersCount(
                 pendingReward.data.profileId
               );
-            console.log("followerCountData", followerCountData);
 
             if (followerCountData.statusCode != 200) {
               throw new NotFoundException(EventHandlerErrors.IS_FOLLOWING);
@@ -162,14 +153,12 @@ export class QueueService {
           followingPostCreatorChecked &&
           followerCountChecked
         ) {
-          console.log("ok to reward");
-
           const session = await this.connection.startSession();
           await session.startTransaction();
           try {
             const treePrice = 10 ^ 18;
             await this.userService.setUserBalance(
-              pendingReward.data.from,
+              pendingReward.data.from.toLowerCase(),
               BigNumber(pendingReward.data.amount).times(treePrice),
               session
             );
@@ -185,11 +174,24 @@ export class QueueService {
               RewardStatus.CONFIRMED,
               session
             );
+            //if
+
+            if (
+              campaign.data.awardedCount + pendingReward.data.amount >=
+              campaign.data.campaignSize
+            ) {
+              await this.campaignService.updateCampaignStatus(
+                campaign.data._id,
+                CampaignStatus.FINISHED,
+                session
+              );
+            }
             let result = await this.web3Service.distributeReward(
               pendingReward.data.from,
               pendingReward.data.to,
               pendingReward.data.amount
             );
+
             await session.commitTransaction();
 
             session.endSession();
@@ -204,18 +206,21 @@ export class QueueService {
           }
         } else {
           let newPendingReward =
-            await this.pendingRewardService.getFirstPendingRewardToReward();
+            await this.pendingRewardService.getFirstPendingRewardToReward(
+              pendingReward.data.campaignId
+            );
+
           //updatePendingReward inList to true
 
           if (newPendingReward.statusCode == 200) {
-            const session = await this.connection.startSession();
-            await session.startTransaction();
+            const session1 = await this.connection.startSession();
+            await session1.startTransaction();
 
             ///////////////////////////////////////////////////////////////////////////////////
             try {
               await this.pendingRewardService.addPendingRewardToList(
-                newPendingReward.data._id,
-                session
+                newPendingReward.data._id.toString(),
+                session1
               );
 
               let now = new Date();
@@ -225,17 +230,23 @@ export class QueueService {
                 Numbers.REWARD_DELAY - (now.getTime() - createdTime.getTime()),
                 0
               );
-              await this.addRewardToQueue(newPendingReward.data._id, newDelay);
 
-              await session.commitTransaction();
+              await this.addRewardToQueue(
+                newPendingReward.data._id.toString(),
+                newDelay
+              );
 
-              session.endSession();
+              await session1.commitTransaction();
+
+              session1.endSession();
 
               return responseHandler(200, "user balance updated");
             } catch (e) {
-              await session.abortTransaction();
+              console.log("errrrr", e);
 
-              session.endSession();
+              await session1.abortTransaction();
+
+              session1.endSession();
 
               throw new InternalServerErrorException(e);
             }

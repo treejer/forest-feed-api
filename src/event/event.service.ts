@@ -49,11 +49,6 @@ export class EventService {
   }
 
   async handleMirror(pubId, profileId, pubIdPointed, profileIdPointed) {
-    console.log(
-      "this.generateHexString(profileId)",
-      this.generateHexString(profileId)
-    );
-
     const publicationId =
       this.generateHexString(profileIdPointed) +
       "-" +
@@ -61,8 +56,6 @@ export class EventService {
 
     const mirroredPublication =
       this.generateHexString(profileId) + "-" + this.generateHexString(pubId);
-
-    console.log("publicationId", mirroredPublication);
 
     const campaign =
       await this.campaignService.getActiveCampaignByPublicationId(
@@ -72,11 +65,11 @@ export class EventService {
     if (!campaign.data) {
       throw new NotFoundException(EventHandlerErrors.CAMPAIGN_NOT_FOUND);
     }
+
     const publicationDetail =
       await this.lensApiService.getMirroredPublicationDetail(
         mirroredPublication
       );
-    console.log("publicationDetail", publicationDetail);
 
     if (publicationDetail.statusCode != 200) {
       throw new NotFoundException(EventHandlerErrors.CANT_GET_FROM);
@@ -146,6 +139,7 @@ export class EventService {
       );
 
     //check if this pendingReward is in the reward list
+
     if (
       pendingCount.data + confirmedRewardCount.data >=
       campaign.data.campaignSize
@@ -171,12 +165,13 @@ export class EventService {
         profileIdPointed: this.generateHexString(profileIdPointed),
         status: RewardStatus.PENDING,
       });
-
-    await this.queueService.addRewardToQueue(
-      createdPendingReward.data._id,
-      30000
-      //      Numbers.REWARD_DELAY
-    );
+    if (inList) {
+      await this.queueService.addRewardToQueue(
+        createdPendingReward.data._id,
+        30000
+        //      Numbers.REWARD_DELAY
+      );
+    }
   }
 
   private generateHexString(value) {

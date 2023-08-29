@@ -73,15 +73,18 @@ export class PendingRewardService {
       {
         $set: { inList: true },
       },
+      [],
       session
     );
   }
 
-  public async getFirstPendingRewardToReward(): Promise<Result<PendingReward>> {
+  public async getFirstPendingRewardToReward(
+    campaignId: string
+  ): Promise<Result<PendingReward>> {
     const result = await this.pendingRewardRepository.sort(
-      { inList: false },
+      { inList: false, campaignId },
       { order: 1 }
-    )[0];
+    );
 
     if (!result[0]) {
       return resultHandler(404, "not found", null);
