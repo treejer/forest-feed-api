@@ -8,7 +8,7 @@ export class LastState extends Document {
   @Prop({ type: Number, required: true, default: 1 })
   lastBlockNumber;
 
-  @Prop({ type: Date, required: true, default: Date.now })
+  @Prop({ type: Date, required: true, default: () => new Date() })
   updatedAt;
 }
 

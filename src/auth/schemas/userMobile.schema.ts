@@ -11,10 +11,10 @@ export class UserMobile extends Document {
   @Prop({ type: String, required: true })
   number;
 
-  @Prop({ type: Date, default: new Date(), required: true })
+  @Prop({ type: Date, default: () => new Date(), required: true })
   verifiedAt;
 
-  @Prop({ type: Date, default: new Date(), required: true })
+  @Prop({ type: Date, default: () => new Date(), required: true })
   createdAt;
 }
 

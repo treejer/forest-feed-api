@@ -35,10 +35,10 @@ export class Campaign extends Document {
   @Prop({ type: Number, required: true })
   campaignSize;
 
-  @Prop({ type: Date, default: new Date(), required: true })
+  @Prop({ type: Date, default: () => new Date(), required: true })
   createdAt;
 
-  @Prop({ type: Date, default: new Date(), required: true })
+  @Prop({ type: Date, default: () => new Date(), required: true })
   updatedAt;
 }
 

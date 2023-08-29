@@ -15,10 +15,10 @@ export class PendingWithdraw extends Document {
   @Prop({ type: Boolean, default: false, required: true })
   isDistributed;
 
-  @Prop({ type: Date, default: new Date(), required: true })
+  @Prop({ type: Date, default: () => new Date(), required: true })
   createdAt;
 
-  @Prop({ type: Date, default: new Date(), required: true })
+  @Prop({ type: Date, default: () => new Date(), required: true })
   updatedAt;
 }
 
