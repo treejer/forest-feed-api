@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 import { Role } from "src/common/constants";
-import BigNumber from 'bignumber.js';
+import BigNumber from "bignumber.js";
 
 export type UserDocument = User & Document;
 
@@ -19,10 +19,10 @@ export class User extends Document {
   @Prop({ type: Number, default: Role.USER, required: true })
   userRole;
 
-  @Prop({ type: Date, default: Date.now, required: true })
+  @Prop({ type: Date, default: () => new Date(), required: true })
   createdAt;
 
-  @Prop({ type: Date, default: Date.now, required: true })
+  @Prop({ type: Date, default: () => new Date(), required: true })
   updatedAt;
 }
 

@@ -232,7 +232,8 @@ export class CampaignService {
     user: JwtUserDto,
     filters,
     skip,
-    limit
+    limit,
+    sortOption
   ): Promise<Result<MyCampaignResultDto>> {
     const filterQuery = {
       ...filters,
@@ -243,7 +244,7 @@ export class CampaignService {
       skip * limit,
       limit,
       filterQuery,
-      { createdAt: 1 },
+      sortOption,
       {
         _id: 1,
         title: 1,
@@ -252,6 +253,8 @@ export class CampaignService {
         creator: 1,
         campaignSize: 1,
         awardedCount: 1,
+        minFollower: 1,
+        isFollowerOnly: 1,
         createdAt: 1,
         updatedAt: 1,
       }
