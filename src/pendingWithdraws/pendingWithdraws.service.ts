@@ -71,6 +71,12 @@ export class PendingWithdrawService {
   }
 
   async withderawRequest(amount: BigNumber, jwtInput: JwtUserDto) {
+    if (amount.isLessThanOrEqualTo(0)) {
+      throw new BadRequestException(
+        pendingWithdrawsErrorMessage.AMOUNT_IS_NOT_TRUE
+      );
+    }
+
     const user = await this.userService.findUserByWallet(
       jwtInput.walletAddress
     );
@@ -110,7 +116,9 @@ export class PendingWithdrawService {
           session
         );
 
-        this.withdrawJobService.addWithdrawRequestToQueue(withdrawPending._id);
+        await this.withdrawJobService.addWithdrawRequestToQueue(
+          withdrawPending._id.toString()
+        );
 
         await session.commitTransaction();
 
@@ -134,12 +142,12 @@ export class PendingWithdrawService {
   public async getPendingWithdrawsCapacity(
     creator: string
   ): Promise<BigNumber> {
-    let total = BigNumber(0);
+    let total = new BigNumber(0);
 
     const result = await this.getPendingWithdrawsForCreator(creator);
 
     for (let index = 0; index < result.length; index++) {
-      total.plus(result[index].amount);
+      total = BigNumber(total).plus(BigNumber(result[index].amount));
     }
 
     return total;

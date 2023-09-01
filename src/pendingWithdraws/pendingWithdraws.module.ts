@@ -8,6 +8,7 @@ import { PendingWithdrawRepository } from "./pendingWithdraws.repository";
 import { UserModule } from "src/user/user.module";
 import { CampaignModule } from "src/campaigns/campaign.module";
 import { QueueModule } from "src/queue/queue.module";
+import { PendingWithdrawController } from "./pendingWithdraws.controller";
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -18,7 +19,7 @@ import { QueueModule } from "src/queue/queue.module";
     forwardRef(() => QueueModule),
     forwardRef(() => CampaignModule),
   ],
-  controllers: [],
+  controllers: [PendingWithdrawController],
   providers: [PendingWithdrawService, ConfigService, PendingWithdrawRepository],
   exports: [PendingWithdrawService],
 })

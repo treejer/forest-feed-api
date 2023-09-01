@@ -8,6 +8,8 @@ import { Wallet, ethers } from "ethers";
 import { resultHandler } from "src/common/helpers";
 import { Numbers, web3Errors } from "src/common/constants";
 import BigNumber from "bignumber.js";
+import { utils } from "ethers";
+
 const Web3 = require("web3");
 const Contract = require("./../../abi/Contract.json");
 
@@ -34,10 +36,17 @@ export class Web3Service {
         console.error("web3Instance : Something went wrong : " + e)
       );
 
-    const web3Provider = this.configService.get<string>("WEB3_PROVIDER");
+    const web3Provider =
+      this.configService.get<string>("NODE_ENV") == "production"
+        ? this.configService.get<string>("WEB3_PROVIDER")
+        : this.configService.get<string>("WEB3_PROVIDER_TEST");
 
     this.provider = new ethers.providers.JsonRpcProvider(web3Provider);
-    const privateKey = this.configService.get<string>("SCRIPT_PK");
+
+    const privateKey =
+      this.configService.get<string>("NODE_ENV") == "production"
+        ? this.configService.get<string>("SCRIPT_PK")
+        : this.configService.get<string>("SCRIPT_PK_TEST");
 
     this.signer = new Wallet(privateKey, this.provider);
   }
@@ -84,7 +93,10 @@ export class Web3Service {
         "FORESTFEED_CONTRACT_ADDRESS"
       );
 
+      console.log("contractAddress", contractAddress);
+
       const contractABI = Contract.abi;
+
       const contract = new ethers.Contract(
         contractAddress,
         contractABI,
@@ -97,7 +109,13 @@ export class Web3Service {
         throw new ForbiddenException(web3Errors.HIGH_GAS_PRICE);
       }
 
-      let transaction = await contract.withdraw(from, amount);
+      let transaction = await contract.withdraw(
+        from,
+        utils.parseUnits(amount.toString(), 0),
+        {
+          gasLimit: 2e6,
+        }
+      );
 
       let transactionResponse = await transaction.wait();
 
@@ -105,6 +123,7 @@ export class Web3Service {
 
       return resultHandler(200, "withdraw distributed", transactionHash);
     } catch (error) {
+      console.log("error", error);
       throw new InternalServerErrorException(error.message);
     }
   }

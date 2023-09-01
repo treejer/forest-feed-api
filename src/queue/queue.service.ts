@@ -58,6 +58,7 @@ export class QueueService {
   ): Promise<IResult> {
     try {
       await this.rewardsQueue.add("distribute", pendingRewardId, { delay: 0 });
+      console.log("xxx");
     } catch (error) {
       console.log("errrrrr", error);
     }
@@ -67,6 +68,7 @@ export class QueueService {
   @Process("distribute")
   async distributeReward(job: Job<any>) {
     await this.sleep(2000);
+    console.log("aaaa");
 
     let failed = true;
     let retryCount = 0;
@@ -309,7 +311,8 @@ export class WithdrawJobService {
     @InjectQueue("pendingWithdraw") private readonly withdrawsQueue: Queue,
     private pendingWithdrawService: PendingWithdrawService,
     @InjectConnection() private connection: Connection,
-    private web3Service: Web3Service
+    private web3Service: Web3Service,
+    private userService: UserService
   ) {}
 
   async addWithdrawRequestToQueue(pendingWithdrawId: string): Promise<IResult> {
@@ -340,8 +343,15 @@ export class WithdrawJobService {
 
           try {
             await this.pendingWithdrawService.updatePendingWithdrawStatus(
-              data,
-              true
+              pendingWithdraw.data._id.toString(),
+              true,
+              session
+            );
+
+            await this.userService.setUserBalance(
+              pendingWithdraw.data.recipient,
+              BigNumber(pendingWithdraw.data.amount),
+              session
             );
 
             let result = await this.web3Service.distributeWithdraw(
@@ -360,6 +370,7 @@ export class WithdrawJobService {
             throw new InternalServerErrorException(e);
           }
         }
+        failed = false;
       } catch (error) {
         retryCount++;
         if (retryCount == 2) {
@@ -373,5 +384,15 @@ export class WithdrawJobService {
 
   async sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async emptyQueue(): Promise<IResult> {
+    try {
+      this.withdrawsQueue.obliterate({ force: true });
+    } catch (error) {
+      console.log("errrrrr", error);
+    }
+
+    return responseHandler(200, "added to queue");
   }
 }

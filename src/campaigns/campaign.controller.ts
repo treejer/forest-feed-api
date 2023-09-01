@@ -249,15 +249,18 @@ export class CampaignController {
     },
   })
   @ApiQuery({ name: "filters", required: false, type: String })
+  @ApiQuery({ name: "sort", required: false, type: String })
   @UseGuards(AuthGuard("jwt"))
   @Get("campaign/my-campaign")
   getMyCampaigns(
     @User() user: JwtUserDto,
     @Query("skip") skip: number,
     @Query("limit") limit: number,
-    @Query("filters") filters?: string
+    @Query("filters") filters?: string,
+    @Query("sort") sort?: string
   ) {
     if (!filters || filters.length === 0) filters = "{}";
+    if (!sort || sort.length === 0) sort = "{}";
 
     try {
       filters = JSON.parse(decodeURIComponent(filters));
@@ -265,7 +268,19 @@ export class CampaignController {
       filters = JSON.parse(decodeURIComponent("{}"));
     }
 
-    return this.campaignService.getMyCampaigns(user, filters, skip, limit);
+    try {
+      sort = JSON.parse(decodeURIComponent(sort));
+    } catch (error) {
+      sort = JSON.parse(decodeURIComponent("{}"));
+    }
+
+    return this.campaignService.getMyCampaigns(
+      user,
+      filters,
+      skip,
+      limit,
+      sort
+    );
   }
 
   //-------------------------------------------------------------------------------

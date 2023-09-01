@@ -67,7 +67,7 @@ export class Listener {
   async runLensEventListener(web3) {
     const contracts = [
       {
-        name: this.configService.get<string>("LENS_CONTRACT"),
+        name: this.configService.get<string>("LENS_CONTRACT_NAME"),
         address: this.configService.get<string>("LENS_CONTRACT_ADDRESS"),
         abi: LensEvents.abi,
         events: [LensEventName.Mirror_CREATED],
@@ -173,12 +173,8 @@ export class Listener {
   async runForestFeedEventListener(web3) {
     const contracts = [
       {
-        name: this.configService.get<string>(
-          "FOREST_FEED_LISTENER_CONTRACT_NAME"
-        ),
-        address: this.configService.get<string>(
-          "FOREST_FEED_LISTENER_CONTRACT_ADDRESS"
-        ),
+        name: this.configService.get<string>("FORESTFEED_CONTRACT_NAME"),
+        address: this.configService.get<string>("FORESTFEED_CONTRACT_ADDRESS"),
         abi: ForestFeedEvents.abi,
         events: [ForestFeedEventName.DEPOSITED],
       },
@@ -209,7 +205,7 @@ export class Listener {
             if (event.name === ForestFeedEventName.DEPOSITED) {
               try {
                 await this.userService.updateUserBalance(
-                  event.values.creator,
+                  event.values.creator.toLowerCase(),
                   BigNumber(event.values.amount),
                   event.transactionHash
                 );
