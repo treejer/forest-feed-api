@@ -20,7 +20,7 @@ import { PendingWithdrawController } from "./pendingWithdraws.controller";
     forwardRef(() => CampaignModule),
   ],
   controllers: [PendingWithdrawController],
-  providers: [PendingWithdrawService, ConfigService, PendingWithdrawRepository],
+  providers: [PendingWithdrawService, PendingWithdrawRepository],
   exports: [PendingWithdrawService],
 })
 export class PendingWithdrawModule {}
