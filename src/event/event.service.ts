@@ -1,6 +1,7 @@
 import {
   ConflictException,
   ForbiddenException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -12,10 +13,13 @@ import { LensApiService } from "src/lens-api/lens-api.service";
 import { PendingRewardService } from "src/pendingReward/pendingReward.service";
 import { QueueService } from "src/queue/queue.service";
 import {
+  CONFIG,
   EventHandlerErrors,
   Numbers,
   RewardStatus,
 } from "src/common/constants";
+import { BigNumber as BN } from "ethers";
+import BigNumber from "bignumber.js";
 
 @Injectable()
 export class EventService {
@@ -72,7 +76,7 @@ export class EventService {
       );
 
     if (publicationDetail.statusCode != 200) {
-      throw new NotFoundException(EventHandlerErrors.CANT_GET_FROM);
+      throw new HttpException(EventHandlerErrors.CANT_GET_FROM, 499);
     }
 
     let from = publicationDetail.data.from;
@@ -101,7 +105,7 @@ export class EventService {
         );
 
       if (followedData.statusCode != 200) {
-        throw new NotFoundException(EventHandlerErrors.CANT_GET_FOLLOWED_DATA);
+        throw new HttpException(EventHandlerErrors.CANT_GET_FOLLOWED_DATA, 499);
       }
 
       if (followedData.data.isFollowing) {
@@ -117,7 +121,7 @@ export class EventService {
       );
 
       if (followerCountData.statusCode != 200) {
-        throw new NotFoundException(EventHandlerErrors.IS_FOLLOWING);
+        throw new HttpException(EventHandlerErrors.IS_FOLLOWING, 499);
       }
       if (followerCountData.data.totalFollowers < campaign.data.minFollower) {
         throw new ForbiddenException(
@@ -175,10 +179,6 @@ export class EventService {
   }
 
   private generateHexString(value) {
-    const hexValue = Number(value).toString(16).padStart(2, "0");
-
-    const hexString = `0x${hexValue}`.toLowerCase();
-
-    return hexString;
+    return BN.from(value).toHexString();
   }
 }

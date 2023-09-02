@@ -32,6 +32,7 @@ export const CampaignErrorMessage = {
   INVALID_CAMPAIGN_STATUS: "invalid campaign status",
   INVALID_ACCESS: "invalid access",
   NOT_FOUND: "campaign not found",
+  INVALID_CAMPAIGN_SIZE: "invalid campaign size",
 };
 
 export const UserApiErrorMessage = {

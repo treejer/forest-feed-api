@@ -20,6 +20,7 @@ import { UserService } from "src/user/user.service";
 import { Web3Service } from "src/web3/web3.service";
 import BigNumber from "bignumber.js";
 import {
+  CONFIG,
   EventHandlerErrors,
   LensApiErrorMessage,
   Numbers,
@@ -27,6 +28,7 @@ import {
 } from "src/common/constants";
 import { PendingWithdrawService } from "src/pendingWithdraws/pendingWithdraws.service";
 import { CampaignStatus } from "src/campaigns/enum";
+import { utils } from "ethers";
 
 @Processor("rewards") // Queue name
 export class QueueService {
@@ -57,8 +59,7 @@ export class QueueService {
     delay?: number
   ): Promise<IResult> {
     try {
-      await this.rewardsQueue.add("distribute", pendingRewardId, { delay: 0 });
-      console.log("xxx");
+      await this.rewardsQueue.add("distribute", pendingRewardId, { delay });
     } catch (error) {
       console.log("errrrrr", error);
     }
@@ -158,10 +159,9 @@ export class QueueService {
           const session = await this.connection.startSession();
           await session.startTransaction();
           try {
-            const treePrice = 10 ^ 18;
             await this.userService.setUserBalance(
               pendingReward.data.from.toLowerCase(),
-              BigNumber(pendingReward.data.amount).times(treePrice),
+              BigNumber(pendingReward.data.amount).times(CONFIG.TREE_PRICE),
               session
             );
 

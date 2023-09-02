@@ -42,6 +42,10 @@ export class CampaignService {
     //cehck no active campaign
     const userWallet = jwtInput.walletAddress.toLowerCase();
 
+    if (input.campaignSize <= 0) {
+      throw new ForbiddenException(CampaignErrorMessage.INVALID_CAMPAIGN_SIZE);
+    }
+
     let exists = await this.campaignRepository.findOne({
       creator: userWallet,
       publicationId: input.publicationId,

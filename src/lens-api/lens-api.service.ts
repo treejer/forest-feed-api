@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { ForbiddenException, HttpException, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import axios from "axios";
 import { LensApiErrorMessage } from "src/common/constants";
@@ -61,7 +61,7 @@ export class LensApiService {
         });
       }
     } catch (error) {
-      throw new ForbiddenException("Graph failed !!");
+      throw new HttpException("Graph failed !!", 499);
     }
   }
 
@@ -98,7 +98,7 @@ export class LensApiService {
       }
     } catch (error) {
       console.log("error", error);
-      throw new ForbiddenException("Graph failed !!");
+      throw new HttpException("Graph failed !!", 499);
     }
   }
 
@@ -136,7 +136,7 @@ export class LensApiService {
       }
     } catch (error) {
       console.log("error", error);
-      throw new ForbiddenException("Graph failed !!");
+      throw new HttpException("Graph failed !!", 499);
     }
   }
 
@@ -169,8 +169,7 @@ export class LensApiService {
         return resultHandler(404, "not found", "");
       }
     } catch (error) {
-      console.log("error", error);
-      throw new ForbiddenException("Graph failed !!");
+      throw new HttpException("Graph failed !!", 499);
     }
   }
 
@@ -207,7 +206,7 @@ export class LensApiService {
       }
     } catch (error) {
       console.log("error", error);
-      throw new ForbiddenException("Graph failed !!");
+      throw new HttpException("Graph failed !!", 499);
     }
   }
 
@@ -243,7 +242,7 @@ export class LensApiService {
       }
     } catch (error) {
       console.log("error", error);
-      throw new ForbiddenException("Graph failed !!");
+      throw new HttpException("Graph failed !!", 499);
     }
   }
 }
