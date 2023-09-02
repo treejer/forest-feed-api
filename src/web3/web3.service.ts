@@ -56,7 +56,7 @@ export class Web3Service {
       const contractAddress = this.configService.get<string>(
         "FORESTFEED_CONTRACT_ADDRESS"
       );
-
+      console.log("forest feeed contract address", contractAddress);
       const contractABI = Contract.abi;
       const contract = new ethers.Contract(
         contractAddress,
@@ -66,17 +66,23 @@ export class Web3Service {
 
       let gasPrice = await this.provider.getGasPrice();
 
-      if (Number(gasPrice) > Numbers.MAX_GAS_PRICE) {
-        throw new ForbiddenException(web3Errors.HIGH_GAS_PRICE);
-      }
+      // if (Number(gasPrice) > Numbers.MAX_GAS_PRICE) {
+      //   throw new ForbiddenException(web3Errors.HIGH_GAS_PRICE);
+      // }
 
-      let transaction = await contract.reward(from, to, count);
+      let transaction = await contract.reward(from, to, count, {
+        gasLimit: 2e6,
+      });
+
       let transactionResponse = await transaction.wait();
+      console.log("transactionResponse", transactionResponse);
 
       const transactionHash = transactionResponse.transactionHash;
 
       return resultHandler(200, "reward distributed", transactionHash);
     } catch (error) {
+      console.log("weeeeeeeeeeeee", error);
+
       throw new InternalServerErrorException(error.message);
     }
   }

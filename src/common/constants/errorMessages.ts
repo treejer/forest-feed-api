@@ -32,6 +32,7 @@ export const CampaignErrorMessage = {
   INVALID_CAMPAIGN_STATUS: "invalid campaign status",
   INVALID_ACCESS: "invalid access",
   NOT_FOUND: "campaign not found",
+  INVALID_CAMPAIGN_SIZE: "invalid campaign size",
 };
 
 export const UserApiErrorMessage = {
@@ -57,4 +58,7 @@ export const EventHandlerErrors = {
   IS_FOLLOWING: "can't get is following data",
   NOT_FOLLOWING_POST_OWNER: "not following post owner",
   MIN_FOLLOWER_NOT_SATISFIED: "min follower not satisfied",
+  MIRROR_POST_DELETED: "mirrored post deleted",
+  PENDING_REWARD_NOT_FOUND: "pending reward not found",
+  PUBLICATION_NOT_FOUND: "publication not found",
 };

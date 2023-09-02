@@ -1,6 +1,7 @@
 import {
   ConflictException,
   ForbiddenException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -12,10 +13,13 @@ import { LensApiService } from "src/lens-api/lens-api.service";
 import { PendingRewardService } from "src/pendingReward/pendingReward.service";
 import { QueueService } from "src/queue/queue.service";
 import {
+  CONFIG,
   EventHandlerErrors,
   Numbers,
   RewardStatus,
 } from "src/common/constants";
+import { BigNumber as BN } from "ethers";
+import BigNumber from "bignumber.js";
 
 @Injectable()
 export class EventService {
@@ -54,32 +58,34 @@ export class EventService {
       "-" +
       this.generateHexString(pubIdPointed);
 
+    const mirroredPublication =
+      this.generateHexString(profileId) + "-" + this.generateHexString(pubId);
+
     const campaign =
       await this.campaignService.getActiveCampaignByPublicationId(
         publicationId
       );
 
-    if (!campaign) {
+    if (!campaign.data) {
       throw new NotFoundException(EventHandlerErrors.CAMPAIGN_NOT_FOUND);
     }
 
-    const fromProfileData = await this.lensApiService.getProfileOWner(
-      this.generateHexString(profileIdPointed).toLocaleLowerCase()
-    );
+    const publicationDetail =
+      await this.lensApiService.getMirroredPublicationDetail(
+        mirroredPublication
+      );
 
-    if (fromProfileData.statusCode != 200) {
-      throw new NotFoundException(EventHandlerErrors.CANT_GET_FROM);
+    if (publicationDetail.statusCode != 200) {
+      throw new HttpException(EventHandlerErrors.CANT_GET_FROM, 499);
     }
-    let from = fromProfileData.data;
 
-    const toProfileData = await this.lensApiService.getProfileOWner(
-      this.generateHexString(profileId).toLocaleLowerCase()
-    );
+    let from = publicationDetail.data.from;
+    let to = publicationDetail.data.to;
+    let mirrorDeleted = publicationDetail.data.deleted;
 
-    if (toProfileData.statusCode != 200) {
-      throw new NotFoundException(EventHandlerErrors.CANT_GET_TO);
+    if (mirrorDeleted) {
+      throw new ForbiddenException(EventHandlerErrors.MIRROR_POST_DELETED);
     }
-    let to = toProfileData.data;
 
     let reward = await this.pendingRewardService.getPendingReward({
       campaignId: campaign.data._id,
@@ -94,15 +100,15 @@ export class EventService {
     if (campaign.data.isFollowerOnly) {
       const followedData =
         await this.lensApiService.getProfileAFollowedByProfileB(
-          this.generateHexString(profileId),
-          this.generateHexString(profileIdPointed)
+          this.generateHexString(profileIdPointed),
+          this.generateHexString(profileId)
         );
 
       if (followedData.statusCode != 200) {
-        throw new NotFoundException(EventHandlerErrors.CANT_GET_FOLLOWED_DATA);
+        throw new HttpException(EventHandlerErrors.CANT_GET_FOLLOWED_DATA, 499);
       }
 
-      if (!followedData.data.isFollowing) {
+      if (followedData.data.isFollowing) {
         throw new ForbiddenException(
           EventHandlerErrors.NOT_FOLLOWING_POST_OWNER
         );
@@ -115,7 +121,7 @@ export class EventService {
       );
 
       if (followerCountData.statusCode != 200) {
-        throw new NotFoundException(EventHandlerErrors.IS_FOLLOWING);
+        throw new HttpException(EventHandlerErrors.IS_FOLLOWING, 499);
       }
       if (followerCountData.data.totalFollowers < campaign.data.minFollower) {
         throw new ForbiddenException(
@@ -137,6 +143,7 @@ export class EventService {
       );
 
     //check if this pendingReward is in the reward list
+
     if (
       pendingCount.data + confirmedRewardCount.data >=
       campaign.data.campaignSize
@@ -147,6 +154,7 @@ export class EventService {
     const orderData = await this.pendingRewardService.getPendingRewardsCount({
       campaignId: campaign.data.id,
     });
+
     const createdPendingReward =
       await this.pendingRewardService.createPendingRewards({
         amount: 1,
@@ -155,24 +163,22 @@ export class EventService {
         from: from,
         to: to,
         inList,
-        pubId,
-        profileId,
-        pubIdPointed,
-        profileIdPointed,
+        pubId: this.generateHexString(pubId),
+        profileId: this.generateHexString(profileId),
+        pubIdPointed: this.generateHexString(pubIdPointed),
+        profileIdPointed: this.generateHexString(profileIdPointed),
         status: RewardStatus.PENDING,
       });
-
-    await this.queueService.addRewardToQueue(
-      createdPendingReward.data._id,
-      Numbers.REWARD_DELAY
-    );
+    if (inList) {
+      await this.queueService.addRewardToQueue(
+        createdPendingReward.data._id,
+        30000
+        //      Numbers.REWARD_DELAY
+      );
+    }
   }
 
   private generateHexString(value) {
-    const hexValue = value.toString(16).padStart(2, "0");
-
-    const hexString = `0x${hexValue}`.toLowerCase();
-
-    return hexString;
+    return BN.from(value).toHexString();
   }
 }
