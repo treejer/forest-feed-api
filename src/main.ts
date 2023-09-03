@@ -12,6 +12,8 @@ import { ErrorFilter } from "./error.filter";
 import { BugsnagService } from "./bugsnag/bugsnag.service";
 import { ConfigService } from "@nestjs/config";
 
+const basicAuth = require("express-basic-auth");
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
@@ -43,6 +45,15 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config, options);
 
   SwaggerModule.setup("api", app, document);
+
+  app.use(
+    basicAuth({
+      challenge: true,
+      users: {
+        [configService.get("USER_NAME")]: configService.get("PASSWORD"),
+      },
+    })
+  );
 
   app.enableCors();
 

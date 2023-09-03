@@ -11,8 +11,6 @@ import { PendingWithdrawModule } from "src/pendingWithdraws/pendingWithdraws.mod
 import { PendingRewardModule } from "src/pendingReward/pendingReward.module";
 import { CampaignController } from "./campaign.controller";
 
-
-
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -22,10 +20,10 @@ import { CampaignController } from "./campaign.controller";
     LensApiModule,
     UserModule,
     PendingRewardModule,
-    forwardRef(() => PendingWithdrawModule)
+    forwardRef(() => PendingWithdrawModule),
   ],
   controllers: [CampaignController],
-  providers: [CampaignService, ConfigService, CampaignRepository],
+  providers: [CampaignService, CampaignRepository],
   exports: [CampaignService],
 })
 export class CampaignModule {}
