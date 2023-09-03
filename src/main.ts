@@ -14,6 +14,14 @@ import { ConfigService } from "@nestjs/config";
 
 const basicAuth = require("express-basic-auth");
 
+function shouldAuthenticate(req) {
+  if (req.originalUrl == "/queues") {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
@@ -46,13 +54,15 @@ async function bootstrap() {
 
   SwaggerModule.setup("api", app, document);
 
-  app.use(
-    basicAuth({
-      challenge: true,
-      users: {
-        [configService.get("USER_NAME")]: configService.get("PASSWORD"),
-      },
-    })
+  const basicAuthMiddleware = basicAuth({
+    challenge: true,
+    users: {
+      [configService.get("USER_NAME")]: configService.get("PASSWORD"),
+    },
+  });
+
+  app.use((req, res, next) =>
+    shouldAuthenticate(req) ? basicAuthMiddleware(req, res, next) : next()
   );
 
   app.enableCors();
