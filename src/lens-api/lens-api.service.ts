@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { ForbiddenException, HttpException, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import axios from "axios";
 import { LensApiErrorMessage } from "src/common/constants";
@@ -7,11 +7,17 @@ import {
   getFollowersCountQuery,
   getIsFollowedByProfileQuery,
   getProfileOwnerQuery,
+  getPublicationIsDeletedQuery,
   getPublicationOwnerQuery,
+  getPublicationWithDetailQuery,
 } from "src/common/graphQuery";
 import { resultHandler } from "src/common/helpers";
 import { Result } from "src/database/interfaces/result.interface";
-import { FollowersCountResultDto, FollowingDataResultDto } from "./dto";
+import {
+  FollowersCountResultDto,
+  FollowingDataResultDto,
+  MirroredPublicationWithDetailResultDto,
+} from "./dto";
 @Injectable()
 export class LensApiService {
   private readonly lensUrl;
@@ -55,7 +61,7 @@ export class LensApiService {
         });
       }
     } catch (error) {
-      throw new ForbiddenException("Graph failed !!");
+      throw new HttpException("Graph failed !!", 499);
     }
   }
 
@@ -92,7 +98,7 @@ export class LensApiService {
       }
     } catch (error) {
       console.log("error", error);
-      throw new ForbiddenException("Graph failed !!");
+      throw new HttpException("Graph failed !!", 499);
     }
   }
 
@@ -130,7 +136,7 @@ export class LensApiService {
       }
     } catch (error) {
       console.log("error", error);
-      throw new ForbiddenException("Graph failed !!");
+      throw new HttpException("Graph failed !!", 499);
     }
   }
 
@@ -163,8 +169,80 @@ export class LensApiService {
         return resultHandler(404, "not found", "");
       }
     } catch (error) {
+      throw new HttpException("Graph failed !!", 499);
+    }
+  }
+
+  async getMirroredPublicationDetail(
+    publicationId: string
+  ): Promise<Result<MirroredPublicationWithDetailResultDto>> {
+    if (!this.lensUrl) {
+      throw new ForbiddenException(LensApiErrorMessage.LENS_URL_NOT_SET);
+    }
+
+    try {
+      const postBody = {
+        operationName: "Publication",
+        query: getPublicationWithDetailQuery(publicationId),
+        variables: {},
+      };
+
+      const res = await axios.post(this.lensUrl, postBody, {
+        timeout: 4000,
+        headers: {
+          contentType: "application/json",
+        },
+      });
+      console.log("ressssss", res.data.data);
+
+      if (res.data.data && res.data.data.publication) {
+        return resultHandler(200, "get publication detail", {
+          from: res.data.data.publication.mirrorOf.profile.ownedBy,
+          to: res.data.data.publication.profile.ownedBy,
+          deleted: res.data.data.publication.hidden,
+        });
+      } else {
+        return resultHandler(404, "not found", "");
+      }
+    } catch (error) {
       console.log("error", error);
-      throw new ForbiddenException("Graph failed !!");
+      throw new HttpException("Graph failed !!", 499);
+    }
+  }
+
+  async getMirroredPublicationStatus(
+    publicationId: string
+  ): Promise<Result<boolean>> {
+    if (!this.lensUrl) {
+      throw new ForbiddenException(LensApiErrorMessage.LENS_URL_NOT_SET);
+    }
+
+    try {
+      const postBody = {
+        operationName: "Publication",
+        query: getPublicationIsDeletedQuery(publicationId),
+        variables: {},
+      };
+
+      const res = await axios.post(this.lensUrl, postBody, {
+        timeout: 4000,
+        headers: {
+          contentType: "application/json",
+        },
+      });
+
+      if (res.data.data && res.data.data.publication) {
+        return resultHandler(
+          200,
+          "get publication detail",
+          res.data.data.publication.hidden
+        );
+      } else {
+        return resultHandler(404, "not found", "");
+      }
+    } catch (error) {
+      console.log("error", error);
+      throw new HttpException("Graph failed !!", 499);
     }
   }
 }

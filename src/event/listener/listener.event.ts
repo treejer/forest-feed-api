@@ -112,7 +112,7 @@ export class Listener {
                     error.response.statusCode == 403)
                 ) {
                   console.log("error.response", error.response);
-                  console.log("DEPOSITED error", error);
+                  console.log("Mirror error", error);
                 } else {
                   console.log("error.response", error.response);
                   reject("error");
