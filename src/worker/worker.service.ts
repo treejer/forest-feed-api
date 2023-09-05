@@ -1,7 +1,10 @@
 // send-email.job.ts
 
 import { InjectQueue, Process, Processor } from "@nestjs/bull";
-import { InternalServerErrorException } from "@nestjs/common";
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Job, Queue } from "bull";
 
@@ -15,9 +18,15 @@ import { PendingReward } from "src/pendingReward/schemas";
 import { UserService } from "src/user/user.service";
 import { Web3Service } from "src/web3/web3.service";
 import BigNumber from "bignumber.js";
-import { Numbers, RewardStatus } from "src/common/constants";
+import {
+  CONFIG,
+  EventHandlerErrors,
+  Numbers,
+  RewardStatus,
+} from "src/common/constants";
 import { PendingWithdrawService } from "src/pendingWithdraws/pendingWithdraws.service";
 import { QueueService } from "src/queue/queue.service";
+import { CampaignStatus } from "src/campaigns/enum";
 
 @Processor("rewards")
 export class RewardPocess {
@@ -34,10 +43,15 @@ export class RewardPocess {
   @Process("distribute")
   async distributeReward(job: Job<any>) {
     await this.sleep(2000);
+    console.log("aaaa");
 
     let failed = true;
     let retryCount = 0;
     let okToReward = true;
+    let mirrorExistanseChecked = true;
+    let followingPostCreatorChecked = true;
+    let followerCountChecked = true;
+    let campaign;
 
     const data = job.data;
 
@@ -46,64 +60,87 @@ export class RewardPocess {
         const pendingReward = await this.pendingRewardService.getPendingReward({
           _id: data,
         });
+
         if (pendingReward.statusCode != 200) {
-          throw new InternalServerErrorException();
+          throw new NotFoundException(
+            EventHandlerErrors.PENDING_REWARD_NOT_FOUND
+          );
         }
 
-        const campaign = await this.campaignService.getCampaignById(
-          pendingReward.data.campaignId
-        );
-
-        if (campaign.statusCode != 200) {
-          throw new InternalServerErrorException();
-        }
-
-        if (campaign.data.isFollowerOnly) {
-          const followedData =
-            await this.lensApiService.getProfileAFollowedByProfileB(
-              pendingReward.data.profileId,
-              pendingReward.data.profileIdPointed
-            );
-
-          console.log("followed", followedData);
-
-          if (followedData.statusCode != 200) {
-            throw new InternalServerErrorException();
-          }
-
-          if (!followedData.data.isFollowing) {
-            okToReward = false;
-          }
-        }
-
-        if (campaign.data.minFollower > 0 && okToReward) {
-          const followerCountData = await this.lensApiService.getFollowersCount(
-            pendingReward.data.profileId
+        let publicationStatus =
+          await this.lensApiService.getMirroredPublicationStatus(
+            pendingReward.data.profileId + "-" + pendingReward.data.pubId
           );
 
-          if (followerCountData.statusCode != 200) {
-            throw new InternalServerErrorException();
+        if (publicationStatus.statusCode != 200) {
+          throw new NotFoundException(EventHandlerErrors.PUBLICATION_NOT_FOUND);
+        }
+
+        if (publicationStatus.data) {
+          mirrorExistanseChecked = false;
+        }
+
+        if (mirrorExistanseChecked) {
+          campaign = await this.campaignService.getCampaignById(
+            pendingReward.data.campaignId
+          );
+
+          if (campaign.statusCode != 200) {
+            throw new NotFoundException(EventHandlerErrors.CAMPAIGN_NOT_FOUND);
           }
-          if (
-            followerCountData.data.totalFollowers < campaign.data.minFollower
-          ) {
-            okToReward = false;
+
+          if (campaign.data.isFollowerOnly) {
+            const followedData =
+              await this.lensApiService.getProfileAFollowedByProfileB(
+                pendingReward.data.profileId,
+                pendingReward.data.profileIdPointed
+              );
+
+            if (followedData.statusCode != 200) {
+              throw new NotFoundException(
+                EventHandlerErrors.CANT_GET_FOLLOWED_DATA
+              );
+            }
+
+            if (!followedData.data.isFollowing) {
+              followingPostCreatorChecked = false;
+            }
+          }
+
+          if (campaign.data.minFollower > 0 && followerCountChecked) {
+            const followerCountData =
+              await this.lensApiService.getFollowersCount(
+                pendingReward.data.profileId
+              );
+
+            if (followerCountData.statusCode != 200) {
+              throw new NotFoundException(EventHandlerErrors.IS_FOLLOWING);
+            }
+            if (
+              followerCountData.data.totalFollowers < campaign.data.minFollower
+            ) {
+              followerCountChecked = false;
+            }
           }
         }
 
-        if (okToReward) {
+        // //check if condition pass
+        if (
+          mirrorExistanseChecked &&
+          followingPostCreatorChecked &&
+          followerCountChecked
+        ) {
           const session = await this.connection.startSession();
           await session.startTransaction();
           try {
-            const treePrice = 10 ^ 18;
             await this.userService.setUserBalance(
-              pendingReward.data.from,
-              BigNumber(pendingReward.data.amount).times(treePrice),
+              pendingReward.data.from.toLowerCase(),
+              BigNumber(pendingReward.data.amount).times(CONFIG.TREE_PRICE),
               session
             );
 
             await this.campaignService.updateCampaignAwardedCount(
-              campaign.data._id,
+              pendingReward.data.campaignId,
               pendingReward.data.amount,
               session
             );
@@ -113,11 +150,24 @@ export class RewardPocess {
               RewardStatus.CONFIRMED,
               session
             );
+            //if
+
+            if (
+              campaign.data.awardedCount + pendingReward.data.amount >=
+              campaign.data.campaignSize
+            ) {
+              await this.campaignService.updateCampaignStatus(
+                campaign.data._id,
+                CampaignStatus.FINISHED,
+                session
+              );
+            }
             let result = await this.web3Service.distributeReward(
               pendingReward.data.from,
               pendingReward.data.to,
               pendingReward.data.amount
             );
+
             await session.commitTransaction();
 
             session.endSession();
@@ -132,25 +182,52 @@ export class RewardPocess {
           }
         } else {
           let newPendingReward =
-            await this.pendingRewardService.getFirstPendingRewardToReward();
+            await this.pendingRewardService.getFirstPendingRewardToReward(
+              pendingReward.data.campaignId
+            );
+
           //updatePendingReward inList to true
 
           if (newPendingReward.statusCode == 200) {
-            await this.pendingRewardService.addPendingRewardToList(
-              newPendingReward.data._id
-            );
+            const session1 = await this.connection.startSession();
+            await session1.startTransaction();
 
-            let now = new Date();
-            let createdTime = new Date(newPendingReward.data.createdAt);
+            ///////////////////////////////////////////////////////////////////////////////////
+            try {
+              await this.pendingRewardService.addPendingRewardToList(
+                newPendingReward.data._id.toString(),
+                session1
+              );
 
-            let newDelay = Math.max(
-              Numbers.REWARD_DELAY - (now.getTime() - createdTime.getTime()),
-              0
-            );
-            await this.queueService.addRewardToQueue(
-              newPendingReward.data._id,
-              newDelay
-            );
+              let now = new Date();
+              let createdTime = new Date(newPendingReward.data.createdAt);
+
+              let newDelay = Math.max(
+                Numbers.REWARD_DELAY - (now.getTime() - createdTime.getTime()),
+                0
+              );
+
+              await this.queueService.addRewardToQueue(
+                newPendingReward.data._id,
+                newDelay
+              );
+              await session1.commitTransaction();
+
+              session1.endSession();
+
+              return responseHandler(200, "user balance updated");
+            } catch (e) {
+              console.log("errrrr", e);
+
+              await session1.abortTransaction();
+
+              session1.endSession();
+
+              throw new InternalServerErrorException(e);
+            }
+
+            /////////////////////////////////////////////////////////////////////
+
             //add first inList=false to queue and change its inList to true for this campaign
           }
         }
@@ -159,7 +236,7 @@ export class RewardPocess {
       } catch (error) {
         retryCount++;
         if (retryCount == 2) {
-          console.log("aaaa");
+          console.log("limit reached");
 
           await job.retry();
         } else {
