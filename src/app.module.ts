@@ -8,13 +8,13 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { CommandModule } from "nestjs-command";
 import { BugsnagModule } from "./bugsnag/bugsnag.module";
 import { join } from "path";
-import { SchedulerModule } from "./scheduler/scheduler.module";
 import { PendingRewardModule } from "./pendingReward/pendingReward.module";
 import { LensApiModule } from "./lens-api/lens-api.module";
 import { QueueModule } from "./queue/queue.module";
 import { CampaignModule } from "./campaigns/campaign.module";
 import { EventModule } from "./event/event.module";
-
+import { BullBoardModule } from "@bull-board/nestjs";
+import { ExpressAdapter } from "@bull-board/express";
 @Module({
   imports: [
     BugsnagModule,
@@ -23,12 +23,15 @@ import { EventModule } from "./event/event.module";
     DatabaseModule,
     UserModule,
     AuthModule,
-    // SchedulerModule,
     PendingRewardModule,
     LensApiModule,
     CampaignModule,
     EventModule,
     QueueModule,
+    BullBoardModule.forRoot({
+      route: "/queues",
+      adapter: ExpressAdapter,
+    }),
     ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "..", "views"),

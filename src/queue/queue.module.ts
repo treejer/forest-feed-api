@@ -1,24 +1,17 @@
 import { Module } from "@nestjs/common";
-import { QueueService, WithdrawJobService } from "./queue.service";
+import { QueueService } from "./queue.service";
 import { QueueController } from "./queue.controller";
 import { BullModule } from "@nestjs/bull";
-import { ConfigService } from "@nestjs/config";
-import { PendingRewardModule } from "src/pendingReward/pendingReward.module";
-import { Web3Module } from "src/web3/web3.module";
-import { CampaignModule } from "src/campaigns/campaign.module";
-import { LensApiModule } from "src/lens-api/lens-api.module";
-import { UserModule } from "src/user/user.module";
-import { PendingWithdrawModule } from "src/pendingWithdraws/pendingWithdraws.module";
+import { BullBoardModule } from "@bull-board/nestjs";
+import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
+
 @Module({
   imports: [
     BullModule.forRoot({
       redis: {
-        password: "urfE0FbCpwI0kV361jCN7mJvfYLDrTZm",
-        host: "redis-11280.c273.us-east-1-2.ec2.cloud.redislabs.com", // Redis server host
-        port: 11280, // Redis server port
-        // // password: "QUEUE_PASS",
-        // host: "localhost", // Redis server host
-        // port: 6379, // Redis server port
+        password: "qB6D3Cx7rRBZV4gL2XFFDs1qGGeO5Tmx",
+        host: "redis-13763.c89.us-east-1-3.ec2.cloud.redislabs.com",
+        port: 13763,
       },
     }),
     BullModule.registerQueue({
@@ -37,15 +30,19 @@ import { PendingWithdrawModule } from "src/pendingWithdraws/pendingWithdraws.mod
         removeOnComplete: true,
       },
     }),
-    CampaignModule,
-    LensApiModule,
-    PendingRewardModule,
-    PendingWithdrawModule,
-    Web3Module,
-    UserModule,
+
+    BullBoardModule.forFeature({
+      name: "rewards",
+      adapter: BullMQAdapter, //or use BullAdapter if you're using bull instead of bullMQ
+    }),
+
+    BullBoardModule.forFeature({
+      name: "pendingWithdraw",
+      adapter: BullMQAdapter, //or use BullAdapter if you're using bull instead of bullMQ
+    }),
   ],
   controllers: [QueueController],
-  providers: [QueueService, WithdrawJobService],
-  exports: [QueueService, WithdrawJobService],
+  providers: [QueueService],
+  exports: [QueueService],
 })
 export class QueueModule {}

@@ -30,7 +30,6 @@ import { PendingWithdrawService } from "src/pendingWithdraws/pendingWithdraws.se
 import { CampaignStatus } from "src/campaigns/enum";
 import { utils } from "ethers";
 
-@Processor("rewards") // Queue name
 export class QueueService {
   private x;
   constructor(
@@ -309,88 +308,22 @@ export class QueueService {
 export class WithdrawJobService {
   constructor(
     @InjectQueue("pendingWithdraw") private readonly withdrawsQueue: Queue,
-    private pendingWithdrawService: PendingWithdrawService,
-    @InjectConnection() private connection: Connection,
-    private web3Service: Web3Service,
-    private userService: UserService
+    @InjectQueue("rewards") private readonly rewardsQueue: Queue
   ) {}
 
   async addWithdrawRequestToQueue(pendingWithdrawId: string): Promise<IResult> {
     await this.withdrawsQueue.add("withdraw", pendingWithdrawId);
-
     return responseHandler(200, "added to queue");
   }
 
-  @Process("withdraw")
-  async withdraw(job: Job<any>) {
-    let failed = true;
-    let retryCount = 0;
-
-    const data = job.data;
-
-    while (failed && retryCount < 2) {
-      try {
-        //----------------> try to found pending withdraw request (if found error goto catch,if 404 remove from queue , 200 countinue)
-
-        const pendingWithdraw =
-          await this.pendingWithdrawService.getPendingWithdrawWithId(data);
-
-        if (pendingWithdraw.statusCode == 200) {
-          //---->  try to call blockchain and update database
-
-          const session = await this.connection.startSession();
-          await session.startTransaction();
-
-          try {
-            await this.pendingWithdrawService.updatePendingWithdrawStatus(
-              pendingWithdraw.data._id.toString(),
-              true,
-              session
-            );
-
-            await this.userService.setUserBalance(
-              pendingWithdraw.data.recipient,
-              BigNumber(pendingWithdraw.data.amount),
-              session
-            );
-
-            let result = await this.web3Service.distributeWithdraw(
-              pendingWithdraw.data.recipient,
-              pendingWithdraw.data.amount
-            );
-
-            await session.commitTransaction();
-
-            session.endSession();
-          } catch (e) {
-            await session.abortTransaction();
-
-            session.endSession();
-
-            throw new InternalServerErrorException(e);
-          }
-        }
-        failed = false;
-      } catch (error) {
-        retryCount++;
-        if (retryCount == 2) {
-          await job.retry();
-        } else {
-          await this.sleep(500);
-        }
-      }
-    }
-  }
-
-  async sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  async emptyQueue(): Promise<IResult> {
+  async addRewardToQueue(
+    pendingRewardId: string,
+    delay?: number
+  ): Promise<IResult> {
     try {
-      this.withdrawsQueue.obliterate({ force: true });
+      await this.rewardsQueue.add("distribute", pendingRewardId, { delay: 0 });
     } catch (error) {
-      console.log("errrrrr", error);
+      console.log("error", error);
     }
 
     return responseHandler(200, "added to queue");

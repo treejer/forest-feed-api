@@ -11,13 +11,13 @@ import { ClientSession, Connection } from "mongoose";
 import { JwtUserDto } from "src/auth/dtos";
 import { CONFIG, pendingWithdrawsErrorMessage } from "src/common/constants";
 import { responseHandler, resultHandler } from "src/common/helpers";
-import { WithdrawJobService } from "src/queue/queue.service";
 import { CampaignService } from "./../campaigns/campaign.service";
 import { UserService } from "./../user/user.service";
 import { CreatePendingWithdrawDTO } from "./dto";
 import { PendingWithdrawRepository } from "./pendingWithdraws.repository";
 import { PendingWithdraw } from "./schemas";
 import { Result } from "src/database/interfaces/result.interface";
+import { QueueService } from "src/queue/queue.service";
 @Injectable()
 export class PendingWithdrawService {
   constructor(
@@ -26,8 +26,8 @@ export class PendingWithdrawService {
 
     @Inject(forwardRef(() => CampaignService))
     private campaignService: CampaignService,
-    @Inject(forwardRef(() => WithdrawJobService))
-    private withdrawJobService: WithdrawJobService,
+    @Inject(forwardRef(() => QueueService))
+    private queueService: QueueService,
     @InjectConnection() private connection: Connection
   ) {}
 
@@ -116,7 +116,7 @@ export class PendingWithdrawService {
           session
         );
 
-        await this.withdrawJobService.addWithdrawRequestToQueue(
+        await this.queueService.addWithdrawRequestToQueue(
           withdrawPending._id.toString()
         );
 
