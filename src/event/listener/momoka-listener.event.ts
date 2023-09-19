@@ -5,22 +5,46 @@ export class MomokaListener {
   constructor() {}
 
   async runMomokaListener() {
-    //check the stack is emp
+    while (true) {
+      let requestParam = ""; // null or head of stack
 
-    if (stack == empty) {
-      let error = 0;
-      while (true) {
-        try {
-          if (error == 20) {
-            break;
-          }
-          // request to get 50 transactions of momoka
-          let requests = [];
+      let lastCheckedTransactionId = "0x"; //get this from database (the last transaction we checked)
 
-          requests.forEach((element) => {});
-        } catch (e) {
-          error++;
+      // request to get 50 transactions of momoka with requestParam
+      let requests = []; // req(requestParam)
+
+      let finishRequest = "";
+
+      if (requests.find(lastCheckedTransactionId)) {
+        ///
+        //
+        requests.splice(lastCheckedTransactionId);
+
+        requests = requests.reverse();
+        requests.forEach((req) => {
+          /// check req
+          //---------------------------------------------->
+          /// update last transaction we checked
+        });
+        stack.length > 0 ? stack.pop() : undefined;
+
+        if (stack.length == 0) {
+          break;
         }
+      } else if (finishRequest == lastCheckedTransactionId) {
+        requests = requests.reverse();
+        requests.forEach((req) => {
+          /// check req
+          //---------------------------------------------->
+          /// update last transaction we checked
+        });
+        stack.length > 0 ? stack.pop() : undefined;
+
+        if (stack.length == 0) {
+          break;
+        }
+      } else {
+        // update stack and add to head (next)
       }
     }
   }
