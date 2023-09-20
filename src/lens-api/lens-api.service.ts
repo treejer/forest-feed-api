@@ -259,7 +259,7 @@ export class LensApiService {
     try {
       const postBody = {
         operationName: "DATransactions",
-        query: getDATransactionsQuery(limit, null),
+        query: getDATransactionsQuery(limit, cursor),
         variables: {},
       };
       console.log("post", postBody);
