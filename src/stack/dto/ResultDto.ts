@@ -1,6 +1,6 @@
 export class StackDto {
   readonly id: string;
-  readonly name: string;
+  readonly lastTransaction: string;
   readonly items: string[];
 }
 

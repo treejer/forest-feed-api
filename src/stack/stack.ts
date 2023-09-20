@@ -1,5 +1,9 @@
-export class Stack<T> {
+export class StackClass<T> {
   private items: T[] = [];
+
+  set(array: T[]) {
+    this.items = array;
+  }
 
   push(item: T): void {
     this.items.push(item);
@@ -9,8 +13,8 @@ export class Stack<T> {
     return this.items.pop();
   }
 
-  peek(): T | undefined {
-    return this.items[this.items.length - 1];
+  peek(): T | null {
+    return this.items.length > 0 ? this.items[this.items.length - 1] : null;
   }
 
   isEmpty(): boolean {
@@ -19,5 +23,9 @@ export class Stack<T> {
 
   size(): number {
     return this.items.length;
+  }
+
+  get(): T[] {
+    return this.items;
   }
 }

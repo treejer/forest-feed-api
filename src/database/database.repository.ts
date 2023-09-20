@@ -1,5 +1,11 @@
 import { InternalServerErrorException } from "@nestjs/common";
-import { ClientSession, Document, FilterQuery, Model, UpdateQuery } from "mongoose";
+import {
+  ClientSession,
+  Document,
+  FilterQuery,
+  Model,
+  UpdateQuery,
+} from "mongoose";
 import { IUpdateOne } from "./interfaces";
 
 export abstract class EntityRepository<T extends Document> {
@@ -89,11 +95,11 @@ export abstract class EntityRepository<T extends Document> {
     }
   }
 
-  async create(entityData: Partial<T>,session?:ClientSession): Promise<T> {
+  async create(entityData: Partial<T>, session?: ClientSession): Promise<T> {
     try {
       const entityInstance = new this.entityModel(entityData);
-      
-      return await entityInstance.save({session});
+
+      return await entityInstance.save({ session });
     } catch (error) {
       throw new InternalServerErrorException(error.message);
     }
@@ -128,26 +134,33 @@ export abstract class EntityRepository<T extends Document> {
   async updateOne(
     entityFilterQuery: FilterQuery<T>,
     entityData: UpdateQuery<unknown>,
-    removeDataList: Array<string>=[],
-    session?:ClientSession
+    removeDataList: Array<string> = [],
+    session?: ClientSession
   ): Promise<IUpdateOne> {
     try {
       if (!removeDataList || removeDataList.length == 0) {
-        return await this.entityModel.updateOne(entityFilterQuery, {
-          ...entityData,
-          updatedAt: new Date(),
-        },{ session } );
-      } else {
-        return await this.entityModel.updateOne(entityFilterQuery, [
+        return await this.entityModel.updateOne(
+          entityFilterQuery,
           {
-            $set: {
-              ...entityData,
-              updatedAt: new Date(),
-            },
+            ...entityData,
+            updatedAt: new Date(),
           },
-          { $unset: removeDataList },
-        
-        ],{session});
+          { session }
+        );
+      } else {
+        return await this.entityModel.updateOne(
+          entityFilterQuery,
+          [
+            {
+              $set: {
+                ...entityData,
+                updatedAt: new Date(),
+              },
+            },
+            { $unset: removeDataList },
+          ],
+          { session }
+        );
       }
     } catch (error) {
       throw new InternalServerErrorException(error.message);
