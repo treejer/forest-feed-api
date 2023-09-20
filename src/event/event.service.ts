@@ -52,14 +52,16 @@ export class EventService {
     return result ? result.lastBlockNumber + 1 : 1;
   }
 
-  async handleMirror(pubId, profileId, pubIdPointed, profileIdPointed) {
-    const publicationId =
-      this.generateHexString(profileIdPointed) +
-      "-" +
-      this.generateHexString(pubIdPointed);
+  async handleMirror(pubId, profileId, pubIdPointed, profileIdPointed, isDA) {
+    const publicationId = isDA
+      ? pubIdPointed
+      : this.generateHexString(profileIdPointed) +
+        "-" +
+        this.generateHexString(pubIdPointed);
 
-    const mirroredPublication =
-      this.generateHexString(profileId) + "-" + this.generateHexString(pubId);
+    const mirroredPublication = isDA
+      ? pubId
+      : this.generateHexString(profileId) + "-" + this.generateHexString(pubId);
 
     const campaign =
       await this.campaignService.getActiveCampaignByPublicationId(

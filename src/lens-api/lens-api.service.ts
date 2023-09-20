@@ -4,6 +4,7 @@ import axios from "axios";
 import { LensApiErrorMessage } from "src/common/constants";
 
 import {
+  getDATransactionsQuery,
   getFollowersCountQuery,
   getIsFollowedByProfileQuery,
   getProfileOwnerQuery,
@@ -18,6 +19,7 @@ import {
   FollowingDataResultDto,
   MirroredPublicationWithDetailResultDto,
 } from "./dto";
+import { number } from "yargs";
 @Injectable()
 export class LensApiService {
   private readonly lensUrl;
@@ -237,6 +239,44 @@ export class LensApiService {
           "get publication detail",
           res.data.data.publication.hidden
         );
+      } else {
+        return resultHandler(404, "not found", "");
+      }
+    } catch (error) {
+      console.log("error", error);
+      throw new HttpException("Graph failed !!", 499);
+    }
+  }
+
+  async getDATransactions(cursor: any, limit: number) {
+    if (!this.lensUrl) {
+      throw new ForbiddenException(LensApiErrorMessage.LENS_URL_NOT_SET);
+    }
+    if (limit > 50) {
+      throw new ForbiddenException(LensApiErrorMessage.INVALID_LIMIT);
+    }
+
+    try {
+      const postBody = {
+        operationName: "DATransactions",
+        query: getDATransactionsQuery(limit, null),
+        variables: {},
+      };
+      console.log("post", postBody);
+
+      const res = await axios.post(this.lensUrl, postBody, {
+        timeout: 4000,
+        headers: {
+          contentType: "application/json",
+        },
+      });
+      console.log("res.data.data", res.data.data);
+
+      if (res.data.data && res.data.data.dataAvailabilityTransactions) {
+        return resultHandler(200, "get publication detail", {
+          items: res.data.data.dataAvailabilityTransactions.items,
+          pageInfo: res.data.data.dataAvailabilityTransactions.pageInfo,
+        });
       } else {
         return resultHandler(404, "not found", "");
       }

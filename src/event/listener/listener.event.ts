@@ -101,7 +101,8 @@ export class Listener {
                   event.values.pubId,
                   event.values.profileId,
                   event.values.pubIdPointed,
-                  event.values.profileIdPointed
+                  event.values.profileIdPointed,
+                  false
                 );
               } catch (error) {
                 if (

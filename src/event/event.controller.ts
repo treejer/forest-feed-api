@@ -16,6 +16,12 @@ export class EventController {
   @Get("event")
   async sendEmail() {
     // await this.web3Service.distributeReward("0xF324C19D8f93E01bBd5679623b43E35b38912e8A","",1)
-    return await this.eventService.handleMirror("2", "36250", "6", "35222");
+    return await this.eventService.handleMirror(
+      "2",
+      "36250",
+      "6",
+      "35222",
+      false
+    );
   }
 }

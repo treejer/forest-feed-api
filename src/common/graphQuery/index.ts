@@ -4,3 +4,4 @@ export * from "./getPublicationOwner";
 export * from "./getProfileOwner";
 export * from "./getPublicationWithDetail";
 export * from "./getPublicationIsDeleted";
+export * from "./getDATransactions";
