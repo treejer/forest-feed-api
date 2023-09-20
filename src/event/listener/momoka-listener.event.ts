@@ -21,7 +21,8 @@ export class MomokaListener {
       await this.stackService.getLastTransaction()
     ).data; //get this from database (the last transaction we checked)
 
-    let finishRequest = "";
+    let requests = [];
+    let request51 = "";
 
     let findIndex = requests.findIndex(
       (treansaction) => treansaction.id === lastCheckedTransactionId
