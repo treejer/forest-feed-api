@@ -1,27 +1,72 @@
 import { Injectable } from "@nestjs/common";
+import { Types } from "mongoose";
+import { StackClass } from "src/stack/stack";
+import { StackService } from "src/stack/stack.service";
 
 @Injectable()
 export class MomokaListener {
-  constructor() {}
+  private stackClass;
+
+  constructor(private stackService: StackService) {
+    this.stackClass = new StackClass<string>();
+  }
 
   async runMomokaListener() {
-    //check the stack is emp
+    // while (true) {
+    this.stackClass.set((await this.stackService.getStackItemsById()).data);
 
-    if (stack == empty) {
-      let error = 0;
-      while (true) {
-        try {
-          if (error == 20) {
-            break;
-          }
-          // request to get 50 transactions of momoka
-          let requests = [];
+    let requestParam = this.stackClass.peek(); // null or head of stack
 
-          requests.forEach((element) => {});
-        } catch (e) {
-          error++;
-        }
+    let lastCheckedTransactionId = (
+      await this.stackService.getLastTransaction()
+    ).data; //get this from database (the last transaction we checked)
+
+    let requests = [];
+    let request51 = "";
+
+    let findIndex = requests.findIndex(
+      (treansaction) => treansaction.id === lastCheckedTransactionId
+    );
+
+    if (findIndex != -1) {
+      requests.length = findIndex;
+
+      requests = requests.reverse();
+
+      requests.forEach((req) => {
+        /// check req
+        //---------------------------------------------->
+        /// update last transaction we checked
+      });
+
+      this.stackClass.pop();
+
+      await this.stackService.updateStackDataById({
+        items: this.stackClass.get(),
+      });
+
+      if (this.stackClass.size() == 0) {
+        // break;
       }
+    } else if (finishRequest == lastCheckedTransactionId) {
+      requests = requests.reverse();
+      requests.forEach((req) => {
+        /// check req
+        //---------------------------------------------->
+        /// update last transaction we checked
+      });
+
+      this.stackClass.pop();
+
+      await this.stackService.updateStackDataById({
+        items: this.stackClass.get(),
+      });
+
+      if (this.stackClass.size() == 0) {
+        // break;
+      }
+    } else {
+      // update stack and add to head (next)
     }
   }
 }

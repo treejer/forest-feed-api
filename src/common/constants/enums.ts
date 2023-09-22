@@ -3,6 +3,7 @@ export enum CollectionNames {
   LAST_STATE = "laststates",
   PENDING_REWARDS = "pendingrewards",
   CAMPAIGN = "campaigns",
+  Stack = "stacks",
 }
 
 export enum Role {
@@ -28,6 +29,7 @@ export enum ForestFeedEventName {
 export enum LastStateIds {
   BALANCE = "42414c414e43450000000000",
   MIRROR = "4d4952524f52000000000000",
+  STACK_ID = "535441434b49440000000000",
 }
 
 export const CONFIG = {
