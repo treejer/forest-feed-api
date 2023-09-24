@@ -13,6 +13,8 @@ import { LensApiModule } from "src/lens-api/lens-api.module";
 import { QueueModule } from "src/queue/queue.module";
 import { EventController } from "./event.controller";
 import { UserModule } from "src/user/user.module";
+import { StackModule } from "src/stack/stack.module";
+import { MomokaListener } from "./listener/momoka-listener.event";
 
 @Module({
   imports: [
@@ -26,9 +28,10 @@ import { UserModule } from "src/user/user.module";
     PendingRewardModule,
     LensApiModule,
     QueueModule,
+    StackModule,
   ],
   controllers: [EventController],
-  providers: [Listener, EventService, LastStateRepository],
+  providers: [Listener, EventService, MomokaListener, LastStateRepository],
   exports: [],
 })
 export class EventModule {}

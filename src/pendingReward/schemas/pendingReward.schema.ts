@@ -40,6 +40,8 @@ export class PendingReward extends Document {
 
   @Prop({ type: Number, required: true })
   status;
+  @Prop({ type: Boolean, required: true })
+  isDA;
 
   @Prop({ type: Date, default: () => new Date(), required: true })
   createdAt;

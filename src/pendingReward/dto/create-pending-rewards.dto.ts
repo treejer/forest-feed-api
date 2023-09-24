@@ -10,4 +10,5 @@ export class CreatePendingRewardDTO {
   profileIdPointed: string;
   campaignId: string;
   status: number;
+  isDA: boolean;
 }

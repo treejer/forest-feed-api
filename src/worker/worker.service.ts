@@ -69,7 +69,9 @@ export class RewardPocess {
 
         let publicationStatus =
           await this.lensApiService.getMirroredPublicationStatus(
-            pendingReward.data.profileId + "-" + pendingReward.data.pubId
+            pendingReward.data.isDA
+              ? pendingReward.data.pubId
+              : pendingReward.data.profileId + "-" + pendingReward.data.pubId
           );
 
         if (publicationStatus.statusCode != 200) {

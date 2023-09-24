@@ -15,6 +15,7 @@ import { CampaignModule } from "./campaigns/campaign.module";
 import { EventModule } from "./event/event.module";
 import { BullBoardModule } from "@bull-board/nestjs";
 import { ExpressAdapter } from "@bull-board/express";
+import { StackModule } from "./stack/stack.module";
 @Module({
   imports: [
     BugsnagModule,
@@ -28,6 +29,7 @@ import { ExpressAdapter } from "@bull-board/express";
     CampaignModule,
     EventModule,
     QueueModule,
+    StackModule,
     BullBoardModule.forRoot({
       route: "/queues",
       adapter: ExpressAdapter,
