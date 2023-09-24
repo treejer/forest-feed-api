@@ -31,7 +31,7 @@ export class MomokaListener {
     let jobRunnig = false;
 
     var job = new CronJob(
-      "*/10 * * * * *",
+      "0 */1 * * * *",
       async function () {
         if (jobRunnig) {
           return;
@@ -40,6 +40,7 @@ export class MomokaListener {
         console.log("before", new Date());
         console.log("You will see this message every second");
         await new Promise((resolve) => listener(resolve));
+        console.log("finish");
         jobRunnig = false;
       },
       null,
@@ -87,7 +88,6 @@ export class MomokaListener {
         }
 
         if (lensRequestErrorCount == 20) {
-          resolve();
           break;
         }
 
@@ -122,7 +122,6 @@ export class MomokaListener {
         }
 
         if (lensRequestErrorCount == 20) {
-          resolve();
           break;
         }
 
@@ -138,7 +137,6 @@ export class MomokaListener {
           console.log("requests", requests);
 
           if (requests.length == 0) {
-            resolve();
             break;
           }
 
@@ -174,10 +172,10 @@ export class MomokaListener {
         }
       } catch (e) {
         console.log("e", e);
-        resolve();
         break;
       }
     }
+    resolve();
   }
 
   private async processArray(requests, stackService) {
