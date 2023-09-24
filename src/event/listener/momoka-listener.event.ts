@@ -31,7 +31,7 @@ export class MomokaListener {
     let jobRunnig = false;
 
     var job = new CronJob(
-      "* */2 * * * *",
+      "0 */1 * * * *",
       async function () {
         if (jobRunnig) {
           return;
