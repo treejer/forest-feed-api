@@ -9,4 +9,10 @@ export class MirroredPublicationWithDetailResultDto {
 
   @IsBoolean()
   deleted: boolean;
+
+  @IsString()
+  fromProfileId: string;
+
+  @IsString()
+  toProfileId: string;
 }

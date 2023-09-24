@@ -1,7 +1,7 @@
 export const getDATransactionsQuery = (limit, cursor) => {
   return `
     query DATransactions {
-        dataAvailabilityTransactions(request:{limit:"${limit}",cursor:"${cursor}"}) {
+        dataAvailabilityTransactions(request:{limit:"${limit}",cursor:${cursor}}) {
           items {
             __typename
                ... on DataAvailabilityPost {

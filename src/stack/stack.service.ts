@@ -25,7 +25,9 @@ export class StackService {
       _id: LastStateIds.STACK_ID,
     });
 
-    console.log("data", data);
+    const data2 = await this.stackRepository.find({});
+
+    console.log("data", data2, data, LastStateIds.STACK_ID);
 
     return resultHandler(200, "stack items", data.items);
   }

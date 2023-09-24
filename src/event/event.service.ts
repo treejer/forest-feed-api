@@ -76,6 +76,7 @@ export class EventService {
       await this.lensApiService.getMirroredPublicationDetail(
         mirroredPublication
       );
+    console.log("publicationDetail", publicationDetail);
 
     if (publicationDetail.statusCode != 200) {
       throw new HttpException(EventHandlerErrors.CANT_GET_FROM, 499);
@@ -131,6 +132,7 @@ export class EventService {
         );
       }
     }
+    console.log("xxxxx");
 
     let inList = true;
 
@@ -152,10 +154,13 @@ export class EventService {
     ) {
       inList = false;
     }
+    console.log("yyyyy", campaign.data);
 
     const orderData = await this.pendingRewardService.getPendingRewardsCount({
       campaignId: campaign.data.id,
     });
+
+    console.log("orderrrrr", orderData);
 
     const createdPendingReward =
       await this.pendingRewardService.createPendingRewards({
@@ -165,11 +170,18 @@ export class EventService {
         from: from,
         to: to,
         inList,
-        pubId: this.generateHexString(pubId),
-        profileId: this.generateHexString(profileId),
-        pubIdPointed: this.generateHexString(pubIdPointed),
-        profileIdPointed: this.generateHexString(profileIdPointed),
+        pubId: isDA ? pubId : this.generateHexString(pubId),
+        profileId: isDA
+          ? publicationDetail.data.toProfileId
+          : this.generateHexString(profileId),
+        pubIdPointed: isDA
+          ? pubIdPointed
+          : this.generateHexString(pubIdPointed),
+        profileIdPointed: isDA
+          ? publicationDetail.data.fromProfileId
+          : this.generateHexString(profileIdPointed),
         status: RewardStatus.PENDING,
+        isDA,
       });
     if (inList) {
       await this.queueService.addRewardToQueue(

@@ -26,6 +26,5 @@ export class EventController {
     //   "35222",
     //   false
     // );
-    return await this.momokaListener.runMomokaListener();
   }
 }

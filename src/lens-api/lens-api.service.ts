@@ -200,6 +200,8 @@ export class LensApiService {
       if (res.data.data && res.data.data.publication) {
         return resultHandler(200, "get publication detail", {
           from: res.data.data.publication.mirrorOf.profile.ownedBy,
+          fromProfileId: res.data.data.publication.mirrorOf.profile.id,
+          toProfileId: res.data.data.publication.profile.id,
           to: res.data.data.publication.profile.ownedBy,
           deleted: res.data.data.publication.hidden,
         });
@@ -262,15 +264,15 @@ export class LensApiService {
         query: getDATransactionsQuery(limit, cursor),
         variables: {},
       };
-      console.log("post", postBody);
+      // console.log("post", postBody);
 
       const res = await axios.post(this.lensUrl, postBody, {
-        timeout: 4000,
+        timeout: 30000,
         headers: {
           contentType: "application/json",
         },
       });
-      console.log("res.data.data", res.data.data);
+      // console.log("res.data.data", res.data.data);
 
       if (res.data.data && res.data.data.dataAvailabilityTransactions) {
         return resultHandler(200, "get publication detail", {

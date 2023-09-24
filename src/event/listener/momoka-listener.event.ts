@@ -1,22 +1,54 @@
 import { Injectable } from "@nestjs/common";
 import { Types } from "mongoose";
+import { Command, Option } from "nestjs-command";
 import { sleep } from "src/common/helpers";
 import { LensApiService } from "src/lens-api/lens-api.service";
 import { StackClass } from "src/stack/stack";
 import { StackService } from "src/stack/stack.service";
-
+import { CronJob } from "cron";
+import { EventService } from "../event.service";
 @Injectable()
 export class MomokaListener {
   private stackClass;
 
   constructor(
     private stackService: StackService,
-    private lensApiService: LensApiService
+    private lensApiService: LensApiService,
+    private eventService: EventService
   ) {
     this.stackClass = new StackClass<string>();
   }
 
-  async runMomokaListener() {
+  @Command({
+    command: "cronJob:run",
+    describe: "cron job run",
+  })
+  async run() {
+    console.log("cronJob run !!");
+
+    let listener = this.listener.bind(this);
+
+    let jobRunnig = false;
+
+    var job = new CronJob(
+      "*/10 * * * * *",
+      async function () {
+        if (jobRunnig) {
+          return;
+        }
+        jobRunnig = true;
+        console.log("before", new Date());
+        console.log("You will see this message every second");
+        await new Promise((resolve) => listener(resolve));
+        jobRunnig = false;
+      },
+      null,
+      true
+    );
+    job.start();
+  }
+
+  async listener(resolve) {
     while (true) {
       /* ------------------------- initial data ------------------------- */
 
@@ -27,7 +59,7 @@ export class MomokaListener {
 
         let lastCheckedTransactionId = (
           await this.stackService.getLastTransaction()
-        ).data; //get this from database (the last transaction we checked)
+        ).data;
 
         let lensRequestErrorCount = 0;
 
@@ -43,7 +75,7 @@ export class MomokaListener {
             lensResponce = (
               await this.lensApiService.getDATransactions(
                 requestParam ? JSON.stringify(requestParam) : null,
-                2
+                50
               )
             ).data;
             lensRequestErrorCount = 0;
@@ -55,6 +87,7 @@ export class MomokaListener {
         }
 
         if (lensRequestErrorCount == 20) {
+          resolve();
           break;
         }
 
@@ -89,6 +122,7 @@ export class MomokaListener {
         }
 
         if (lensRequestErrorCount == 20) {
+          resolve();
           break;
         }
 
@@ -104,6 +138,7 @@ export class MomokaListener {
           console.log("requests", requests);
 
           if (requests.length == 0) {
+            resolve();
             break;
           }
 
@@ -117,10 +152,6 @@ export class MomokaListener {
             items: this.stackClass.get(),
             lastTransaction: requests[requests.length - 1].transactionId,
           });
-
-          if (this.stackClass.size() == 0) {
-            break;
-          }
         } else if (finishRequest.transactionId == lastCheckedTransactionId) {
           console.log("--------------------------------------------Section2");
           requests = requests.reverse();
@@ -133,10 +164,6 @@ export class MomokaListener {
             items: this.stackClass.get(),
             lastTransaction: requests[requests.length - 1].transactionId,
           });
-
-          if (this.stackClass.size() == 0) {
-            break;
-          }
         } else {
           console.log("--------------------------------------------Section3");
           this.stackClass.push(next);
@@ -147,6 +174,7 @@ export class MomokaListener {
         }
       } catch (e) {
         console.log("e", e);
+        resolve();
         break;
       }
     }
@@ -154,9 +182,33 @@ export class MomokaListener {
 
   private async processArray(requests, stackService) {
     for (const req of requests) {
-      console.log("req", req);
+      if (req.__typename == "DataAvailabilityMirror") {
+        console.log("req", req);
 
-      //-----------> check req
+        try {
+          await this.eventService.handleMirror(
+            req.publicationId,
+            "",
+            req.mirrorOfPublicationId,
+            "",
+            true
+          );
+        } catch (error) {
+          if (
+            error &&
+            error.response &&
+            (error.response.statusCode == 409 ||
+              error.response.statusCode == 404 ||
+              error.response.statusCode == 403)
+          ) {
+            console.log("error.response", error.response);
+            console.log("Mirror error", error);
+          } else {
+            console.log("error.response", error.response);
+            throw new Error("error");
+          }
+        }
+      }
     }
   }
 }
