@@ -103,8 +103,12 @@ export class EventService {
     if (campaign.data.isFollowerOnly) {
       const followedData =
         await this.lensApiService.getProfileAFollowedByProfileB(
-          this.generateHexString(profileIdPointed),
-          this.generateHexString(profileId)
+          isDA
+            ? publicationDetail.data.fromProfileId
+            : this.generateHexString(profileIdPointed),
+          isDA
+            ? publicationDetail.data.toProfileId
+            : this.generateHexString(profileId)
         );
 
       if (followedData.statusCode != 200) {
@@ -120,7 +124,9 @@ export class EventService {
 
     if (campaign.data.minFollower > 0) {
       const followerCountData = await this.lensApiService.getFollowersCount(
-        this.generateHexString(profileId)
+        isDA
+          ? publicationDetail.data.toProfileId
+          : this.generateHexString(profileId)
       );
 
       if (followerCountData.statusCode != 200) {
