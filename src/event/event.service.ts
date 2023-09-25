@@ -114,8 +114,13 @@ export class EventService {
       if (followedData.statusCode != 200) {
         throw new HttpException(EventHandlerErrors.CANT_GET_FOLLOWED_DATA, 499);
       }
+      console.log(
+        "followedData.data.isFollowing",
+        followedData.data.isFollowing
+      );
+      console.log("type of", typeof followedData.data.isFollowing);
 
-      if (followedData.data.isFollowing) {
+      if (followedData.data.isFollowing == false) {
         throw new ForbiddenException(
           EventHandlerErrors.NOT_FOLLOWING_POST_OWNER
         );
