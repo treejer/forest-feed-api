@@ -67,7 +67,7 @@ export class LensApiService {
     }
   }
 
-  async getProfileAFollowedByProfileB(
+  async getProfileAFollowingProfileB(
     profile_a: string,
     profile_b: string
   ): Promise<Result<FollowingDataResultDto>> {
@@ -90,7 +90,7 @@ export class LensApiService {
       });
 
       if (res.data.data && res.data.data.profile) {
-        return resultHandler(200, "get profile a followed by profile b", {
+        return resultHandler(200, "get profile a following profile b", {
           isFollowing: res.data.data.profile.isFollowing,
         });
       } else {
