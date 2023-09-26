@@ -93,7 +93,7 @@ export class RewardPocess {
 
           if (campaign.data.isFollowerOnly) {
             const followedData =
-              await this.lensApiService.getProfileAFollowedByProfileB(
+              await this.lensApiService.getProfileAFollowingProfileB(
                 pendingReward.data.profileId,
                 pendingReward.data.profileIdPointed
               );

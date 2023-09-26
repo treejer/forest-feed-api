@@ -102,13 +102,13 @@ export class EventService {
 
     if (campaign.data.isFollowerOnly) {
       const followedData =
-        await this.lensApiService.getProfileAFollowedByProfileB(
-          isDA
-            ? publicationDetail.data.fromProfileId
-            : this.generateHexString(profileIdPointed),
+        await this.lensApiService.getProfileAFollowingProfileB(
           isDA
             ? publicationDetail.data.toProfileId
-            : this.generateHexString(profileId)
+            : this.generateHexString(profileId),
+          isDA
+            ? publicationDetail.data.fromProfileId
+            : this.generateHexString(profileIdPointed)
         );
 
       if (followedData.statusCode != 200) {

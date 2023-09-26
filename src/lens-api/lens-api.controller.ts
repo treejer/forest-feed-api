@@ -18,11 +18,11 @@ export class LensApiController {
 
   @ApiOperation({ summary: "get is profile_a followed by profile_b" })
   @Get("/profile/:profile_a/followed-by/:profile_b")
-  getProfileAFollowedByProfileB(
+  getProfileAFollowingProfileB(
     @Param("profile_a") profile_a: string,
     @Param("profile_b") profile_b: string
   ) {
-    return this.lensApiService.getProfileAFollowedByProfileB(
+    return this.lensApiService.getProfileAFollowingProfileB(
       profile_a,
       profile_b
     );

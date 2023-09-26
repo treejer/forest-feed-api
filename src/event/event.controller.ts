@@ -15,16 +15,16 @@ export class EventController {
     private momokaListener: MomokaListener
   ) {}
 
-  @Get("event")
+  @Get("event1")
   async sendEmail() {
     console.log("momokaListener");
     // await this.web3Service.distributeReward("0xF324C19D8f93E01bBd5679623b43E35b38912e8A","",1)
-    // return await this.eventService.handleMirror(
-    //   "2",
-    //   "36250",
-    //   "6",
-    //   "35222",
-    //   false
-    // );
+    return await this.eventService.handleMirror(
+      "0x8996-0x08-DA-6934c77d",
+      "",
+      "0x922a-0x03-DA-0e489c37",
+      "",
+      true
+    );
   }
 }
