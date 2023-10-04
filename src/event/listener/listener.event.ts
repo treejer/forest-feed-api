@@ -88,6 +88,11 @@ export class Listener {
 
     let lastErrorTime = new Date();
 
+    const block = await web3.eth.getBlock(40244481, true);
+
+    console.log("const transactions = block.transactions",block.transactions)
+    
+
     ethereumEvents.on("block.confirmed", async (blockNumber, events, done) => {
       console.log("block.confirmed", blockNumber);
 
@@ -150,7 +155,7 @@ export class Listener {
         (currentTime.getTime() - lastErrorTime.getTime()) / (1000 * 60)
       );
 
-      console.log("not time", diffMinutes);
+      console.log("errerrerrerrerr", diffMinutes , err);
 
       if (diffMinutes >= minutesToCheck) {
         lastErrorTime = currentTime;
