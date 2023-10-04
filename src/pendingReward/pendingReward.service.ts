@@ -116,7 +116,7 @@ export class PendingRewardService {
   ): Promise<Result<PendingReward[]>> {
     const pendingRewards = await this.pendingRewardRepository.find({
       campaignId: { $in: campaignIds },
-      isDistributed: false,
+      status: RewardStatus.PENDING,
     });
 
     return resultHandler(
