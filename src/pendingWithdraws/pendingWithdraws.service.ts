@@ -88,14 +88,23 @@ export class PendingWithdrawService {
         jwtInput.walletAddress
       );
 
+    console.log("activeCampaignsCapacity", activeCampaignsCapacity);
+
     const notDistributedPendingRewardsForDeactiveCampaigns =
       await this.campaignService.getNotDistributedPendingRewardsCapacityForDeactiveCampaignsByCreator(
         jwtInput.walletAddress
       );
 
+    console.log(
+      "notDistributedPendingRewardsForDeactiveCampaigns",
+      notDistributedPendingRewardsForDeactiveCampaigns
+    );
+
     const totalPendingWithdraw = await this.getPendingWithdrawsCapacity(
       jwtInput.walletAddress
     );
+
+    console.log("totalPendingWithdraw", totalPendingWithdraw);
 
     const remainingBalance = BigNumber(totalBalance).minus(
       BigNumber(
