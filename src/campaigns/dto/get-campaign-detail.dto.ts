@@ -1,6 +1,6 @@
-import { ApiResponseProperty } from "@nestjs/swagger";
-import { IsBoolean, IsDate, IsNumber, IsString } from "class-validator";
-import { PendingRewardResultDTO } from "src/pendingReward/dto";
+import { ApiResponseProperty } from '@nestjs/swagger';
+import { IsBoolean, IsDate, IsNumber, IsString } from 'class-validator';
+import { PendingRewardResultDTO } from 'src/pendingReward/dto';
 
 export class GetCampaignDetailDto {
   @ApiResponseProperty()
@@ -26,6 +26,10 @@ export class GetCampaignDetailDto {
   @ApiResponseProperty()
   @IsNumber()
   status: number;
+
+  @ApiResponseProperty()
+  @IsString()
+  publicationId: string;
 
   @ApiResponseProperty()
   @IsDate()
