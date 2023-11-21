@@ -6,6 +6,74 @@
       "anonymous": false,
       "inputs": [
         {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "publicationActedProfileId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "publicationActedId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "actorProfileId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "referrerProfileIds",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "referrerPubIds",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "address",
+              "name": "actionModuleAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "actionModuleData",
+              "type": "bytes"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct Types.PublicationActionParams",
+          "name": "publicationActionParams",
+          "type": "tuple"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "actionModuleReturnData",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "transactionExecutor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "Acted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": false,
           "internalType": "string",
           "name": "name",
@@ -32,45 +100,20 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "collectModule",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "bool",
-          "name": "whitelisted",
-          "type": "bool"
+          "internalType": "uint256",
+          "name": "byProfileId",
+          "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "CollectModuleWhitelisted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "profileId",
+          "name": "idOfProfileBlocked",
           "type": "uint256"
         },
         {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "pubId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
+          "indexed": false,
           "internalType": "address",
-          "name": "collectNFT",
+          "name": "transactionExecutor",
           "type": "address"
         },
         {
@@ -80,32 +123,7 @@
           "type": "uint256"
         }
       ],
-      "name": "CollectNFTDeployed",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "profileId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "pubId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "CollectNFTInitialized",
+      "name": "Blocked",
       "type": "event"
     },
     {
@@ -155,113 +173,97 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "collector",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "profileId",
-          "type": "uint256"
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "profileId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "contentURI",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "pointedProfileId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "pointedPubId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "referrerProfileIds",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "referrerPubIds",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "bytes",
+              "name": "referenceModuleData",
+              "type": "bytes"
+            },
+            {
+              "internalType": "address[]",
+              "name": "actionModules",
+              "type": "address[]"
+            },
+            {
+              "internalType": "bytes[]",
+              "name": "actionModulesInitDatas",
+              "type": "bytes[]"
+            },
+            {
+              "internalType": "address",
+              "name": "referenceModule",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "referenceModuleInitData",
+              "type": "bytes"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct Types.CommentParams",
+          "name": "commentParams",
+          "type": "tuple"
         },
         {
           "indexed": true,
           "internalType": "uint256",
           "name": "pubId",
           "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "rootProfileId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "rootPubId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "collectModuleData",
-          "type": "bytes"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "Collected",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "profileId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "pubId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "contentURI",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "profileIdPointed",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "pubIdPointed",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "referenceModuleData",
-          "type": "bytes"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "collectModule",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "collectModuleReturnData",
-          "type": "bytes"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "referenceModule",
-          "type": "address"
         },
         {
           "indexed": false,
           "internalType": "bytes",
           "name": "referenceModuleReturnData",
           "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes[]",
+          "name": "actionModulesInitReturnDatas",
+          "type": "bytes[]"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "referenceModuleInitReturnData",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "transactionExecutor",
+          "type": "address"
         },
         {
           "indexed": false,
@@ -278,14 +280,14 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "wallet",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "delegatorProfileId",
+          "type": "uint256"
         },
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "profileId",
+          "name": "configNumber",
           "type": "uint256"
         },
         {
@@ -295,7 +297,7 @@
           "type": "uint256"
         }
       ],
-      "name": "DefaultProfileSet",
+      "name": "DelegatedExecutorsConfigApplied",
       "type": "event"
     },
     {
@@ -304,14 +306,26 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "profileId",
+          "name": "delegatorProfileId",
           "type": "uint256"
         },
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "dispatcher",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "configNumber",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address[]",
+          "name": "delegatedExecutors",
+          "type": "address[]"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool[]",
+          "name": "approvals",
+          "type": "bool[]"
         },
         {
           "indexed": false,
@@ -320,7 +334,7 @@
           "type": "uint256"
         }
       ],
-      "name": "DispatcherSet",
+      "name": "DelegatedExecutorsConfigChanged",
       "type": "event"
     },
     {
@@ -359,25 +373,6 @@
       "inputs": [
         {
           "indexed": true,
-          "internalType": "address",
-          "name": "moduleGlobals",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "FeeModuleBaseConstructed",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
           "internalType": "uint256",
           "name": "profileId",
           "type": "uint256"
@@ -391,8 +386,20 @@
         {
           "indexed": false,
           "internalType": "bytes",
+          "name": "followModuleInitData",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
           "name": "followModuleReturnData",
           "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "transactionExecutor",
+          "type": "address"
         },
         {
           "indexed": false,
@@ -402,56 +409,6 @@
         }
       ],
       "name": "FollowModuleSet",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "followModule",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "bool",
-          "name": "whitelisted",
-          "type": "bool"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "FollowModuleWhitelisted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "delegate",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "newPower",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "FollowNFTDelegatedPowerChanged",
       "type": "event"
     },
     {
@@ -485,101 +442,38 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "profileId",
+          "name": "followerProfileId",
           "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "FollowNFTInitialized",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "profileId",
+          "name": "idOfProfileFollowed",
           "type": "uint256"
         },
         {
-          "indexed": true,
+          "indexed": false,
           "internalType": "uint256",
-          "name": "followNFTId",
+          "name": "followTokenIdAssigned",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "followModuleData",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "processFollowModuleReturnData",
+          "type": "bytes"
         },
         {
           "indexed": false,
           "internalType": "address",
-          "name": "from",
+          "name": "transactionExecutor",
           "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "FollowNFTTransferred",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "profileId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "followNFTURI",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "FollowNFTURISet",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "follower",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256[]",
-          "name": "profileIds",
-          "type": "uint256[]"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes[]",
-          "name": "followModuleDatas",
-          "type": "bytes[]"
         },
         {
           "indexed": false,
@@ -589,74 +483,6 @@
         }
       ],
       "name": "Followed",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "profileId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "address[]",
-          "name": "addresses",
-          "type": "address[]"
-        },
-        {
-          "indexed": false,
-          "internalType": "bool[]",
-          "name": "approved",
-          "type": "bool[]"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "FollowsApproved",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256[]",
-          "name": "profileIds",
-          "type": "uint256[]"
-        },
-        {
-          "indexed": false,
-          "internalType": "bool[]",
-          "name": "enabled",
-          "type": "bool[]"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "FollowsToggled",
       "type": "event"
     },
     {
@@ -706,34 +532,84 @@
           "type": "uint256"
         },
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "profileIdPointed",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "pubIdPointed",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "referenceModuleData",
-          "type": "bytes"
-        },
-        {
-          "indexed": false,
+          "indexed": true,
           "internalType": "address",
-          "name": "referenceModule",
+          "name": "collectNFT",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "LegacyCollectNFTDeployed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "profileId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "metadataURI",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "pointedProfileId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "pointedPubId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "referrerProfileIds",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "referrerPubIds",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "bytes",
+              "name": "referenceModuleData",
+              "type": "bytes"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct Types.MirrorParams",
+          "name": "mirrorParams",
+          "type": "tuple"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "pubId",
+          "type": "uint256"
         },
         {
           "indexed": false,
           "internalType": "bytes",
           "name": "referenceModuleReturnData",
           "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "transactionExecutor",
+          "type": "address"
         },
         {
           "indexed": false,
@@ -751,8 +627,14 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "hub",
+          "name": "signer",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "nonce",
+          "type": "uint256"
         },
         {
           "indexed": false,
@@ -761,123 +643,49 @@
           "type": "uint256"
         }
       ],
-      "name": "ModuleBaseConstructed",
+      "name": "NonceUpdated",
       "type": "event"
     },
     {
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "currency",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "bool",
-          "name": "prevWhitelisted",
-          "type": "bool"
-        },
-        {
-          "indexed": true,
-          "internalType": "bool",
-          "name": "whitelisted",
-          "type": "bool"
-        },
-        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "profileId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "contentURI",
+              "type": "string"
+            },
+            {
+              "internalType": "address[]",
+              "name": "actionModules",
+              "type": "address[]"
+            },
+            {
+              "internalType": "bytes[]",
+              "name": "actionModulesInitDatas",
+              "type": "bytes[]"
+            },
+            {
+              "internalType": "address",
+              "name": "referenceModule",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "referenceModuleInitData",
+              "type": "bytes"
+            }
+          ],
           "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "ModuleGlobalsCurrencyWhitelisted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "prevGovernance",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newGovernance",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "ModuleGlobalsGovernanceSet",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint16",
-          "name": "prevTreasuryFee",
-          "type": "uint16"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint16",
-          "name": "newTreasuryFee",
-          "type": "uint16"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "ModuleGlobalsTreasuryFeeSet",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "prevTreasury",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newTreasury",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "ModuleGlobalsTreasurySet",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "profileId",
-          "type": "uint256"
+          "internalType": "struct Types.PostParams",
+          "name": "postParams",
+          "type": "tuple"
         },
         {
           "indexed": true,
@@ -887,33 +695,21 @@
         },
         {
           "indexed": false,
-          "internalType": "string",
-          "name": "contentURI",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "collectModule",
-          "type": "address"
+          "internalType": "bytes[]",
+          "name": "actionModulesInitReturnDatas",
+          "type": "bytes[]"
         },
         {
           "indexed": false,
           "internalType": "bytes",
-          "name": "collectModuleReturnData",
+          "name": "referenceModuleInitReturnData",
           "type": "bytes"
         },
         {
           "indexed": false,
           "internalType": "address",
-          "name": "referenceModule",
+          "name": "transactionExecutor",
           "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "referenceModuleReturnData",
-          "type": "bytes"
         },
         {
           "indexed": false,
@@ -945,36 +741,6 @@
           "internalType": "address",
           "name": "to",
           "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "handle",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "imageURI",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "followModule",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "bytes",
-          "name": "followModuleReturnData",
-          "type": "bytes"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "followNFTURI",
-          "type": "string"
         },
         {
           "indexed": false,
@@ -1023,33 +789,14 @@
         {
           "indexed": false,
           "internalType": "string",
-          "name": "imageURI",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "ProfileImageURISet",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "profileId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
           "name": "metadata",
           "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "transactionExecutor",
+          "type": "address"
         },
         {
           "indexed": false,
@@ -1065,16 +812,97 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "referenceModule",
-          "type": "address"
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "profileId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "contentURI",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "pointedProfileId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "pointedPubId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "referrerProfileIds",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "referrerPubIds",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "bytes",
+              "name": "referenceModuleData",
+              "type": "bytes"
+            },
+            {
+              "internalType": "address[]",
+              "name": "actionModules",
+              "type": "address[]"
+            },
+            {
+              "internalType": "bytes[]",
+              "name": "actionModulesInitDatas",
+              "type": "bytes[]"
+            },
+            {
+              "internalType": "address",
+              "name": "referenceModule",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "referenceModuleInitData",
+              "type": "bytes"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct Types.QuoteParams",
+          "name": "quoteParams",
+          "type": "tuple"
         },
         {
           "indexed": true,
-          "internalType": "bool",
-          "name": "whitelisted",
-          "type": "bool"
+          "internalType": "uint256",
+          "name": "pubId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "referenceModuleReturnData",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes[]",
+          "name": "actionModulesInitReturnDatas",
+          "type": "bytes[]"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "referenceModuleInitReturnData",
+          "type": "bytes"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "transactionExecutor",
+          "type": "address"
         },
         {
           "indexed": false,
@@ -1083,7 +911,7 @@
           "type": "uint256"
         }
       ],
-      "name": "ReferenceModuleWhitelisted",
+      "name": "QuoteCreated",
       "type": "event"
     },
     {
@@ -1097,13 +925,13 @@
         },
         {
           "indexed": true,
-          "internalType": "enum DataTypes.ProtocolState",
+          "internalType": "enum Types.ProtocolState",
           "name": "prevState",
           "type": "uint8"
         },
         {
           "indexed": true,
-          "internalType": "enum DataTypes.ProtocolState",
+          "internalType": "enum Types.ProtocolState",
           "name": "newState",
           "type": "uint8"
         },
@@ -1146,6 +974,118 @@
         }
       ],
       "name": "TokenGuardianStateChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint16",
+          "name": "prevTreasuryFee",
+          "type": "uint16"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint16",
+          "name": "newTreasuryFee",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "TreasuryFeeSet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "prevTreasury",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newTreasury",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "TreasurySet",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "byProfileId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "idOfProfileUnblocked",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "transactionExecutor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "Unblocked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "unfollowerProfileId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "idOfProfileUnfollowed",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "transactionExecutor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "Unfollowed",
       "type": "event"
     },
     {
@@ -1221,6 +1161,153 @@
         }
       ],
       "name": "Transfer",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "collection",
+              "type": "address"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct RegistryTypes.Handle",
+          "name": "handle",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "collection",
+              "type": "address"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct RegistryTypes.Token",
+          "name": "token",
+          "type": "tuple"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "transactionExecutor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "HandleLinked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "collection",
+              "type": "address"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct RegistryTypes.Handle",
+          "name": "handle",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "collection",
+              "type": "address"
+            }
+          ],
+          "indexed": false,
+          "internalType": "struct RegistryTypes.Token",
+          "name": "token",
+          "type": "tuple"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "transactionExecutor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "HandleUnlinked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "handle",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "namespace",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "handleId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "HandleMinted",
       "type": "event"
     }
   ]
