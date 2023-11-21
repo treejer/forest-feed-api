@@ -8,6 +8,7 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -15,20 +16,14 @@ import {
   ApiResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import {
-  AuthErrorMessages,
-  CampaignErrorMessage,
-  SwaggerErrors,
-} from "src/common/constants";
-import { CampaignService } from "./campaign.service";
-import { AuthGuard } from "@nestjs/passport";
 import { JwtUserDto } from "src/auth/dtos";
-import { User } from "src/user/decorators";
-import { CreateCampaignResultDto, CreateCampaignDto } from "./dto";
-import { Campaign } from "./schemas";
-import { MyCampaignResultDto } from "./dto/my-campaign-result.dto";
-import { CampaignDetailResultDto } from "./dto/campaign-detail-result.dto";
+import { CampaignErrorMessage, SwaggerErrors } from "src/common/constants";
 import { IResult } from "src/database/interfaces/IResult.interface";
+import { User } from "src/user/decorators";
+import { CampaignService } from "./campaign.service";
+import { CreateCampaignDto, CreateCampaignResultDto } from "./dto";
+import { CampaignDetailResultDto } from "./dto/campaign-detail-result.dto";
+import { MyCampaignResultDto } from "./dto/my-campaign-result.dto";
 @ApiTags("campaign")
 @Controller()
 export class CampaignController {
@@ -251,7 +246,7 @@ export class CampaignController {
   @ApiQuery({ name: "filters", required: false, type: String })
   @ApiQuery({ name: "sort", required: false, type: String })
   @UseGuards(AuthGuard("jwt"))
-  @Get("campaign/my-campaign")
+  @Get("users/me/campaigns") //campaign/my-campaign
   getMyCampaigns(
     @User() user: JwtUserDto,
     @Query("skip") skip: number,
@@ -341,33 +336,12 @@ export class CampaignController {
   getCampaignDetail(@Param("id") campaignId: string, @User() user: JwtUserDto) {
     return this.campaignService.getCampaignDetails(campaignId, user);
   }
-
-  @ApiOperation({ summary: "get campaign detail with publication id" })
+  //-------------------------------------------------------------------------------
+  @ApiOperation({ summary: "get campaign detail with publication" })
   @ApiResponse({
     status: 200,
-    description: "get campaign detail with publication id",
+    description: "get campaign detail with publication",
     type: CampaignDetailResultDto,
-  })
-  @ApiResponse({
-    status: 401,
-    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
-    content: {
-      "text/plain": {
-        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 403,
-    description: "Response for Invalid access.",
-    content: {
-      "text/plain": {
-        schema: {
-          format: "text/plain",
-          example: CampaignErrorMessage.INVALID_ACCESS,
-        },
-      },
-    },
   })
   @ApiResponse({
     status: 404,
@@ -393,10 +367,46 @@ export class CampaignController {
       },
     },
   })
-  @Get("campaign/:pubId/detail")
-  getCampaignDetailByPublicationId(@Param("id") publicationId: string) {
+  @Get("publications/:id/campaigns")
+  getCampaignDetailWithPublication(@Param("id") publicationId: string) {
     return this.campaignService.getCampaignDetailsWithPublicationId(
       publicationId
     );
+  }
+
+  //-------------------------------------------------------------------------------
+  @ApiOperation({ summary: "get campaign detail with id" })
+  @ApiResponse({
+    status: 200,
+    description: "get campaign detail with id",
+    type: CampaignDetailResultDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: SwaggerErrors.NOT_FOUND_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: CampaignErrorMessage.NOT_FOUND,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @Get("campaigns/:id")
+  getCampaignDetailWithId(@Param("id") campaignId: string) {
+    return this.campaignService.getCampaignDetailsWithId(campaignId);
   }
 }
