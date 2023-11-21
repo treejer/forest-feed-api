@@ -297,6 +297,36 @@ export class CampaignService {
       pendingRewards: pendingRewards.data,
     });
   }
+
+  async getCampaignDetailsWithPublicationId(
+    publicationId: string
+  ): Promise<Result<CampaignDetailResultDto>> {
+    const campaign = await this.campaignRepository.findOne({
+      publicationId,
+      status: CampaignStatus.ACTIVE,
+    });
+    if (!campaign) {
+      throw new NotFoundException(CampaignErrorMessage.NOT_FOUND);
+    }
+
+    const pendingRewards =
+      await this.pendingRewardService.getPendingRewardsForCampaign(
+        campaign._id
+      );
+
+    return resultHandler(200, "campaign details", {
+      title: campaign.title,
+      campaignSize: campaign.campaignSize,
+      awardedCount: campaign.awardedCount,
+      isFollowerOnly: campaign.isFollowerOnly,
+      minimumFollower: campaign.minFollower,
+      status: campaign.status,
+      createdAt: campaign.createdAt,
+      updatedAt: campaign.updatedAt,
+      pendingRewards: pendingRewards.data,
+    });
+  }
+
   async getActiveCampaignByPublicationId(
     publicationId: string
   ): Promise<Result<Campaign>> {

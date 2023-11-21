@@ -1,12 +1,11 @@
 export const getFollowersCountQuery = (profile_id) => {
   return `
-  query Profile {
-      profile(request: { profileId: "${profile_id}" }) {
-        stats {
-          totalFollowers
-          totalFollowing
-          
-        }
+  query profile {
+    profile(request: {forProfileId:"${profile_id}"}) {
+      stats {
+        followers
+        following
       }
+    }
   }`;
 };

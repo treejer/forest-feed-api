@@ -34,6 +34,12 @@ export class LensApiController {
     return this.lensApiService.getPublicationOwner(publication_id);
   }
 
+  @ApiOperation({ summary: "get  owner" })
+  @Get("/addd/:publication_id/")
+  getOwner(@Param("publication_id") publication_id: string) {
+    return this.lensApiService.getFollowersCount(publication_id);
+  }
+
   @ApiOperation({ summary: "get publication owner" })
   @Get("/DATransactions/:cursor/:limit")
   getDATransactions(
@@ -43,6 +49,6 @@ export class LensApiController {
     console.log("limit", limit);
 
     const tempCursor = cursor ? cursor : null;
-    return this.lensApiService.getDATransactions(tempCursor, Number(limit));
+    return this.lensApiService.getDATransactions(tempCursor, limit);
   }
 }

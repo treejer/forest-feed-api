@@ -341,4 +341,62 @@ export class CampaignController {
   getCampaignDetail(@Param("id") campaignId: string, @User() user: JwtUserDto) {
     return this.campaignService.getCampaignDetails(campaignId, user);
   }
+
+  @ApiOperation({ summary: "get campaign detail with publication id" })
+  @ApiResponse({
+    status: 200,
+    description: "get campaign detail with publication id",
+    type: CampaignDetailResultDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: SwaggerErrors.UNAUTHORIZED_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: { format: "text/plain", example: SwaggerErrors.UNAUTHORIZED },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Response for Invalid access.",
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: CampaignErrorMessage.INVALID_ACCESS,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: SwaggerErrors.NOT_FOUND_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: CampaignErrorMessage.NOT_FOUND,
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 500,
+    description: SwaggerErrors.INTERNAL_SERVER_ERROR_DESCRIPTION,
+    content: {
+      "text/plain": {
+        schema: {
+          format: "text/plain",
+          example: SwaggerErrors.INTERNAL_SERVER_ERROR,
+        },
+      },
+    },
+  })
+  @Get("campaign/:pubId/detail")
+  getCampaignDetailByPublicationId(@Param("id") publicationId: string) {
+    return this.campaignService.getCampaignDetailsWithPublicationId(
+      publicationId
+    );
+  }
 }

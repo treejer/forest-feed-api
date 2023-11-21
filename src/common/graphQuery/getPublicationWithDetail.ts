@@ -1,47 +1,30 @@
 export const getPublicationWithDetailQuery = (publication_id) => {
   return `
-      query Publication {
-          publication(request: {
-            publicationId: "${publication_id}"
-          }) {
-           __typename 
-            
-            ... on Mirror {
-              ...MirrorFields
+  query Publication {publication(request: {forId: "${publication_id}"}) {
+    ... on Mirror {
+      id
+      by {
+        id
+        ownedBy {
+          address
+        }
+      }
+      isHidden
+      mirrorOn{
+        __typename
+        ... on Post {
+          id
+          by {
+            id
+            ownedBy {
+              address
             }
           }
+          isHidden
         }
-        
-        
-        fragment ProfileFields on Profile {
-          id
-          ownedBy
-        }
-        
-        fragment PostFields on Post {
-          id
-          profile {
-            ...ProfileFields
-          }
-          appId
-          hidden
-        }
-        
-        fragment MirrorBaseFields on Mirror {
-          id
-          profile {
-            ...ProfileFields
-          }
-          appId
-          hidden
-        }
-        
-        fragment MirrorFields on Mirror {
-          ...MirrorBaseFields
-          mirrorOf {
-           ... on Post {
-              ...PostFields          
-           }
-          }
-        }`;
+      }
+    }
+  }
+}
+`;
 };

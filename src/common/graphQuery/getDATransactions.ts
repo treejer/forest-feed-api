@@ -1,53 +1,64 @@
 export const getDATransactionsQuery = (limit, cursor) => {
   return `
-    query DATransactions {
-        dataAvailabilityTransactions(request:{limit:"${limit}",cursor:${cursor}}) {
-          items {
-            __typename
-               ... on DataAvailabilityPost {
-              ...DAPostFields
-            }
-            ... on DataAvailabilityComment {
-              ...DACommentFields
-            }
-            ... on DataAvailabilityMirror {
-              ...DAMirrorFields
-            }
-          
-          }
-          pageInfo {
-            __typename
-            next
-            prev
-          }
-        
-          
+  query momokaTransactions {
+    momokaTransactions(request: {limit:${limit},cursor:${cursor}}) {
+      items {
+        __typename
+        ... on MomokaPostTransaction {
+          transactionId
+          publication {
+            id  
         }
-      }
-      
-      fragment DAPostFields on DataAvailabilityPost {
-        transactionId
-        publicationId
-      
-      }
-      
-       fragment DACommentFields on DataAvailabilityComment {
-        transactionId
-        publicationId
-      }
-      
-      fragment DAMirrorFields on DataAvailabilityMirror {
+        }
+        ... on MomokaCommentTransaction {
+          transactionId
+          publication {
+            id
+          }
+        }
+        ... on MomokaMirrorTransaction {
           transactionId
           submitter
-          publicationId
-          mirrorOfPublicationId
-          verificationStatus {
-            ... on DataAvailabilityVerificationStatusSuccess {
-              verified
+          publication {
+            id
+          }
+          mirrorOn {
+            __typename
+            ... on Post {
+              id          }
+            ... on Comment {
+              id
             }
-            ... on DataAvailabilityVerificationStatusFailure {
-              status
+            ... on Quote {
+              id
             }
           }
-        }`;
+        }
+         ... on MomokaQuoteTransaction {
+          transactionId
+          submitter
+          publication {
+            id
+          }
+          quoteOn{
+            __typename
+            ... on Post {
+              id
+            }
+            ... on Comment {
+              id
+            }
+            ... on Quote {
+              id
+            }
+          
+          }
+        }
+      }
+      pageInfo {
+        prev
+        next
+      }
+    }
+  }`;
 };

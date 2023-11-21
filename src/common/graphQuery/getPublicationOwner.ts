@@ -2,23 +2,15 @@ export const getPublicationOwnerQuery = (publication_id) => {
   return `
   query Publication {
     publication(request: {
-      publicationId: "${publication_id}"
-    }) {
-     __typename 
-      ... on Post {
-        ...PostFields
+      forId: "${publication_id}"}) {
+        ... on Post {
+          by {
+            id
+            ownedBy {
+              address
+            }
+          }
+        }
       }
-     
-    }
-  }
-  fragment ProfileFields on Profile {
-    ownedBy
-  }
-  
-  fragment PostFields on Post {
-    id
-    profile {
-      ...ProfileFields
-    }
-  }`;
+    }`;
 };
