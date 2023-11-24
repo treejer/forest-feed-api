@@ -37,7 +37,7 @@ export class LensApiService {
 
     try {
       const postBody = {
-        operationName: "Profile",
+        operationName: "profile",
         query: getFollowersCountQuery(profileId),
         variables: {},
       };
@@ -55,7 +55,7 @@ export class LensApiService {
         res.data.data.profile.stats
       ) {
         return resultHandler(200, "get followers count", {
-          totalFollowers: res.data.data.profile.stats.totalFollowers,
+          totalFollowers: res.data.data.profile.stats.followers,
         });
       } else {
         return resultHandler(404, "not found", {
@@ -77,7 +77,7 @@ export class LensApiService {
 
     try {
       const postBody = {
-        operationName: "Profile",
+        operationName: "followStatusBulk",
         query: getIsFollowedByProfileQuery(profile_a, profile_b),
         variables: {},
       };
@@ -89,9 +89,13 @@ export class LensApiService {
         },
       });
 
-      if (res.data.data && res.data.data.profile) {
+      if (
+        res.data.data &&
+        res.data.data.followStatusBulk &&
+        res.data.data.followStatusBulk[0]
+      ) {
         return resultHandler(200, "get profile a following profile b", {
-          isFollowing: res.data.data.profile.isFollowing,
+          isFollowing: res.data.data.followStatusBulk[0].status.value,
         });
       } else {
         return resultHandler(404, "not found", {
@@ -126,12 +130,12 @@ export class LensApiService {
       if (
         res.data.data &&
         res.data.data.publication &&
-        res.data.data.publication.profile
+        res.data.data.publication.by
       ) {
         return resultHandler(
           200,
           "get publication owner",
-          res.data.data.publication.profile.ownedBy.toLowerCase()
+          res.data.data.publication.by.ownedBy.address.toLowerCase()
         );
       } else {
         return resultHandler(404, "not found", "");
@@ -149,7 +153,7 @@ export class LensApiService {
 
     try {
       const postBody = {
-        operationName: "Profile",
+        operationName: "profile",
         query: getProfileOwnerQuery(profile),
         variables: {},
       };
@@ -165,7 +169,7 @@ export class LensApiService {
         return resultHandler(
           200,
           "get profile owner",
-          res.data.data.profile.ownedBy.toLowerCase()
+          res.data.data.profile.ownedBy.address.toLowerCase()
         );
       } else {
         return resultHandler(404, "not found", "");
@@ -195,15 +199,14 @@ export class LensApiService {
           contentType: "application/json",
         },
       });
-      console.log("ressssss", res.data.data);
 
       if (res.data.data && res.data.data.publication) {
         return resultHandler(200, "get publication detail", {
-          from: res.data.data.publication.mirrorOf.profile.ownedBy,
-          fromProfileId: res.data.data.publication.mirrorOf.profile.id,
-          toProfileId: res.data.data.publication.profile.id,
-          to: res.data.data.publication.profile.ownedBy,
-          deleted: res.data.data.publication.hidden,
+          from: res.data.data.publication.mirrorOn.by.ownedBy.address,
+          fromProfileId: res.data.data.publication.mirrorOn.by.id,
+          toProfileId: res.data.data.publication.by.id,
+          to: res.data.data.publication.by.ownedBy.address,
+          deleted: res.data.data.publication.isHidden,
         });
       } else {
         return resultHandler(404, "not found", "");
@@ -239,7 +242,7 @@ export class LensApiService {
         return resultHandler(
           200,
           "get publication detail",
-          res.data.data.publication.hidden
+          res.data.data.publication.isHidden
         );
       } else {
         return resultHandler(404, "not found", "");
@@ -250,21 +253,21 @@ export class LensApiService {
     }
   }
 
-  async getDATransactions(cursor: any, limit: number) {
+  async getDATransactions(cursor: any, limit: string) {
     if (!this.lensUrl) {
       throw new ForbiddenException(LensApiErrorMessage.LENS_URL_NOT_SET);
     }
-    if (limit > 50) {
+    if (!["Ten", "TwentyFive", "Fifty"].includes(limit)) {
       throw new ForbiddenException(LensApiErrorMessage.INVALID_LIMIT);
     }
 
     try {
       const postBody = {
-        operationName: "DATransactions",
+        operationName: "momokaTransactions",
         query: getDATransactionsQuery(limit, cursor),
         variables: {},
       };
-      // console.log("post", postBody);
+      console.log("post", postBody);
 
       const res = await axios.post(this.lensUrl, postBody, {
         timeout: 30000,
@@ -272,12 +275,12 @@ export class LensApiService {
           contentType: "application/json",
         },
       });
-      // console.log("res.data.data", res.data.data);
+      console.log("res.data.data", res.data.data);
 
-      if (res.data.data && res.data.data.dataAvailabilityTransactions) {
+      if (res.data.data && res.data.data.momokaTransactions) {
         return resultHandler(200, "get publication detail", {
-          items: res.data.data.dataAvailabilityTransactions.items,
-          pageInfo: res.data.data.dataAvailabilityTransactions.pageInfo,
+          items: res.data.data.momokaTransactions.items,
+          pageInfo: res.data.data.momokaTransactions.pageInfo,
         });
       } else {
         return resultHandler(404, "not found", "");

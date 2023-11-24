@@ -76,7 +76,7 @@ export class MomokaListener {
             lensResponce = (
               await this.lensApiService.getDATransactions(
                 requestParam ? JSON.stringify(requestParam) : null,
-                50
+                "Fifty" //50
               )
             ).data;
             lensRequestErrorCount = 0;
@@ -110,7 +110,7 @@ export class MomokaListener {
             lensResponce = (
               await this.lensApiService.getDATransactions(
                 JSON.stringify(next),
-                1
+                "Ten" //1
               )
             ).data;
             lensRequestErrorCount = 0;

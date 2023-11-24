@@ -1,13 +1,9 @@
 export const getPublicationIsDeletedQuery = (publication_id) => {
   return `
   query Publication {
-    publication(request: {
-      publicationId: "${publication_id}"
-    }) {
-     __typename 
-      
+    publication(request: {forId: "${publication_id}"}) {
       ... on Mirror {
-        hidden
+        isHidden
       }
     }
   }`;
