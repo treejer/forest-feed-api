@@ -88,13 +88,8 @@ export class Listener {
 
     let lastErrorTime = new Date();
 
-    const block = await web3.eth.getBlock(40244481, true);
-
-    console.log("const transactions = block.transactions",block.transactions)
-    
-
     ethereumEvents.on("block.confirmed", async (blockNumber, events, done) => {
-      console.log("block.confirmed", blockNumber);
+      console.log("block.confirmed", blockNumber, events);
 
       let res = await new Promise(async (resolve, reject) => {
         if (events.length > 0) {
@@ -104,9 +99,9 @@ export class Listener {
                 ///-------------------> lens service
                 await this.eventService.handleMirror(
                   event.values.pubId,
-                  event.values.profileId,
-                  event.values.pubIdPointed,
-                  event.values.profileIdPointed,
+                  event.values.mirrorParams[0], //profileId
+                  event.values.mirrorParams[3], //pointedPubId
+                  event.values.mirrorParams[2], //pointedProfileId
                   false
                 );
               } catch (error) {
@@ -155,7 +150,7 @@ export class Listener {
         (currentTime.getTime() - lastErrorTime.getTime()) / (1000 * 60)
       );
 
-      console.log("errerrerrerrerr", diffMinutes , err);
+      console.log("errerrerrerrerr", diffMinutes, err);
 
       if (diffMinutes >= minutesToCheck) {
         lastErrorTime = currentTime;
