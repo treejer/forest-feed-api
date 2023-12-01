@@ -127,6 +127,8 @@ export class MomokaListener {
 
         let finishRequest = lensResponce.items[0];
 
+        console.log("finishRequest", finishRequest);
+
         console.log("findIndex", findIndex);
 
         if (findIndex != -1) {
@@ -180,14 +182,15 @@ export class MomokaListener {
 
   private async processArray(requests, stackService) {
     for (const req of requests) {
-      if (req.__typename == "DataAvailabilityMirror") {
-        console.log("req", req);
-
+      if (req.__typename == "MomokaMirrorTransaction") {
         try {
+          console.log("req.publication.id", req.publication.id);
+          console.log("req.mirrorOn.id", req.mirrorOn.id);
+
           await this.eventService.handleMirror(
-            req.publicationId,
+            req.publication.id,
             "",
-            req.mirrorOfPublicationId,
+            req.mirrorOn.id,
             "",
             true
           );
